@@ -9,25 +9,39 @@
     "start": "node dist/server.js",
     "db:init": "ts-node scripts/init-db.ts",
     "db:setup": "psql electoral_strategy -f src/db/schema.sql",
-    "db:seed": "ts-node src/db/seed.ts"
+    "db:seed": "ts-node src/db/seed.ts",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:unit": "jest tests/unit",
+    "test:integration": "jest tests/integration"
   },
-  "keywords": ["game", "multiplayer", "electoral"],
+  "keywords": [
+    "game",
+    "multiplayer",
+    "electoral"
+  ],
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "express": "^4.18.2",
-    "socket.io": "^4.6.1",
-    "pg": "^8.11.3",
     "cors": "^2.8.5",
-    "dotenv": "^16.3.1"
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "pg": "^8.11.3",
+    "socket.io": "^4.6.1"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
+    "@types/jest": "^30.0.0",
     "@types/node": "^20.10.6",
     "@types/pg": "^8.10.9",
-    "@types/cors": "^2.8.17",
-    "typescript": "^5.3.3",
+    "@types/supertest": "^7.2.1",
+    "jest": "^30.4.2",
+    "nodemon": "^3.0.2",
+    "supertest": "^7.2.2",
+    "ts-jest": "^29.4.12",
     "ts-node": "^10.9.2",
-    "nodemon": "^3.0.2"
+    "typescript": "^5.3.3"
   }
 }
