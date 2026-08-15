@@ -60,6 +60,7 @@ function Game() {
     targetStates: string[];
     leanChanges: { state: string; oldLean: number; newLean: number }[];
     diceRoll?: number;
+    playerId?: string;
   } | null>(null);
 
   // Copy link state
@@ -134,7 +135,8 @@ function Game() {
               cardName: data.cardName,
               targetStates: data.targetStates || [],
               leanChanges,
-              diceRoll: data.diceRoll
+              diceRoll: data.diceRoll,
+              playerId: data.playerId
             });
           }
 
@@ -536,7 +538,7 @@ function Game() {
             <div className="flex items-start justify-between mb-3">
               <div>
                 <h3 className="text-xl font-bold text-green-700 flex items-center gap-2">
-                  ✓ Card Played
+                  ✓ {players.find(p => p.id === cardResult.playerId)?.player_name || 'Player'} played card
                 </h3>
                 <p className="text-lg font-semibold text-gray-900">{cardResult.cardName}</p>
               </div>
@@ -683,8 +685,8 @@ function Game() {
         </div>
 
         {/* Card Hand - Fixed at bottom */}
-        <div className="fixed bottom-0 left-0 right-0 p-4 z-20">
-          <div className="max-w-7xl mx-auto">
+        <div className="fixed bottom-0 left-0 right-0 z-20 flex justify-start" style={{ pointerEvents: selectedCard ? 'none' : 'auto' }}>
+          <div className="p-4" style={{ pointerEvents: 'auto' }}>
             <CardHand
               cards={hand}
               onCardClick={isMyTurn ? handleCardClick : undefined}
