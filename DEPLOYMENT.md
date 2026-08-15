@@ -14,6 +14,18 @@ This guide explains how to deploy the Electoral Strategy game to Render.
    - Backend API server
    - Frontend static site
 5. Click "Apply" and wait for deployment (5-10 minutes)
+6. **Important**: After initial deployment, you need to add environment variables:
+
+   **Backend Service:**
+   - Go to backend service → Environment
+   - Add `CORS_ORIGIN` = `https://election-game-frontend.onrender.com` (your frontend URL)
+   - Save changes (triggers redeploy)
+
+   **Frontend Service:**
+   - Go to frontend service → Environment
+   - Add `VITE_API_URL` = `https://election-game-backend.onrender.com` (your backend URL)
+   - Add `VITE_SOCKET_URL` = `https://election-game-backend.onrender.com` (your backend URL)
+   - Save changes (triggers redeploy)
 
 ### Option 2: Manual Setup
 

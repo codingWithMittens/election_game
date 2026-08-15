@@ -14,12 +14,6 @@ services:
         fromDatabase:
           name: election-game-db
           property: connectionString
-      - key: CORS_ORIGIN
-        fromService:
-          type: web
-          name: election-game-frontend
-          property: host
-          envVarKey: CORS_ORIGIN
       - key: PORT
         value: 3000
     healthCheckPath: /api/health
@@ -28,23 +22,9 @@ services:
   - type: web
     name: election-game-frontend
     env: static
-    region: oregon
     plan: free
     buildCommand: cd frontend && npm install && npm run build
     staticPublishPath: frontend/dist
-    envVars:
-      - key: VITE_API_URL
-        fromService:
-          type: web
-          name: election-game-backend
-          property: host
-          envVarKey: VITE_API_URL
-      - key: VITE_SOCKET_URL
-        fromService:
-          type: web
-          name: election-game-backend
-          property: host
-          envVarKey: VITE_SOCKET_URL
     routes:
       - type: rewrite
         source: /*
