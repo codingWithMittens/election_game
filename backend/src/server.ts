@@ -25,7 +25,7 @@ app.use(express.json());
 app.use('/api/games', gamesRouter);
 
 // Health check
-app.get('/health', (req, res) => {
+app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
