@@ -5,9 +5,7 @@ interface Player {
   electoral_votes: number;
 }
 
-interface GameState {
-  id: string;
-  game_id: string;
+interface GameStateData {
   state_abbr: string;
   current_lean: number;
   controlling_player_id: string | null;
@@ -25,7 +23,7 @@ interface State {
 
 interface ElectoralVoteBarProps {
   players: Player[];
-  gameStates: GameState[];
+  gameStates: GameStateData[];
   statesData: State[];
 }
 

@@ -560,7 +560,7 @@ function Game() {
               <p className="text-sm font-semibold text-gray-700">State Changes:</p>
               {cardResult.leanChanges.map((change, idx) => {
                 const diff = change.newLean - change.oldLean;
-                const stateName = statesData.find(s => s.abbreviation === change.state)?.name || change.state;
+                const stateName = statesData.find((s: any) => s.abbreviation === change.state)?.name || change.state;
                 return (
                   <div key={idx} className="flex items-center justify-between bg-gray-50 p-2 rounded">
                     <span className="text-sm font-medium text-gray-900">{stateName}</span>
@@ -618,7 +618,7 @@ function Game() {
                 <div className="text-6xl mb-4">🎲</div>
                 <h2 className="text-2xl font-bold text-gray-900 mb-2">Roll the Dice!</h2>
                 <p className="text-gray-600 mb-2">This card requires a dice roll</p>
-                {selectedCard && typeof selectedCard.dice_mechanic === 'object' && selectedCard.dice_mechanic.outcomes && (
+                {selectedCard && selectedCard.dice_mechanic && typeof selectedCard.dice_mechanic === 'object' && selectedCard.dice_mechanic.outcomes && (
                   <div className="mt-4 mb-6 bg-gray-50 p-4 rounded-lg text-left">
                     <p className="font-semibold text-sm text-gray-700 mb-2">Possible Outcomes:</p>
                     <ul className="space-y-1 text-xs text-gray-600">

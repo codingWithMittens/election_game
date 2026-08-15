@@ -43,7 +43,7 @@ function StateMap({ gameStates, onStateClick, selectedStates = [] }: StateMapPro
     return 'Strong Red';
   };
 
-  const getSortedStates = (): State[] => {
+  const getSortedStates = (): (State & { currentLean: number })[] => {
     const statesWithLean = statesData.map(state => {
       const gameState = gameStates.find(gs => gs.state_abbr === state.abbreviation);
       return {

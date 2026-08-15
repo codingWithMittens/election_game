@@ -24,7 +24,7 @@ interface TooltipData {
   y: number;
 }
 
-function USAMap({ gameStates, statesData, onStateClick, selectedStates = [], getStateColor }: USAMapProps) {
+function USAMap({ statesData, onStateClick, selectedStates = [], getStateColor }: USAMapProps) {
   const svgContainerRef = useRef<HTMLDivElement>(null);
   const [tooltip, setTooltip] = useState<TooltipData | null>(null);
 
