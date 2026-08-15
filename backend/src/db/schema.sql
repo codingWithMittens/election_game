@@ -5,7 +5,7 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- Games table
-CREATE TABLE games (
+CREATE TABLE IF NOT EXISTS games (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   game_code VARCHAR(6) UNIQUE NOT NULL,
   host_player_id UUID,
@@ -20,7 +20,7 @@ CREATE TABLE games (
 );
 
 -- Players table
-CREATE TABLE players (
+CREATE TABLE IF NOT EXISTS players (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   game_id UUID NOT NULL REFERENCES games(id) ON DELETE CASCADE,
   player_name VARCHAR(100) NOT NULL,
@@ -36,7 +36,7 @@ CREATE TABLE players (
 );
 
 -- Player hands (cards currently held by players)
-CREATE TABLE player_hands (
+CREATE TABLE IF NOT EXISTS player_hands (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   player_id UUID NOT NULL REFERENCES players(id) ON DELETE CASCADE,
   card_id VARCHAR(50) NOT NULL,
@@ -44,7 +44,7 @@ CREATE TABLE player_hands (
 );
 
 -- Game states (current lean/control of each state)
-CREATE TABLE game_states (
+CREATE TABLE IF NOT EXISTS game_states (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   game_id UUID NOT NULL REFERENCES games(id) ON DELETE CASCADE,
   state_abbr VARCHAR(2) NOT NULL,
@@ -54,7 +54,7 @@ CREATE TABLE game_states (
 );
 
 -- Active events (event cards currently affecting the game)
-CREATE TABLE active_events (
+CREATE TABLE IF NOT EXISTS active_events (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   game_id UUID NOT NULL REFERENCES games(id) ON DELETE CASCADE,
   card_id VARCHAR(50) NOT NULL,
@@ -64,7 +64,7 @@ CREATE TABLE active_events (
 );
 
 -- Game log (history of all actions)
-CREATE TABLE game_log (
+CREATE TABLE IF NOT EXISTS game_log (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   game_id UUID NOT NULL REFERENCES games(id) ON DELETE CASCADE,
   round INTEGER NOT NULL,
@@ -75,7 +75,7 @@ CREATE TABLE game_log (
 );
 
 -- Discard pile
-CREATE TABLE discard_pile (
+CREATE TABLE IF NOT EXISTS discard_pile (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   game_id UUID NOT NULL REFERENCES games(id) ON DELETE CASCADE,
   card_id VARCHAR(50) NOT NULL,
@@ -83,11 +83,11 @@ CREATE TABLE discard_pile (
 );
 
 -- Indexes for performance
-CREATE INDEX idx_games_game_code ON games(game_code);
-CREATE INDEX idx_games_status ON games(status);
-CREATE INDEX idx_players_game_id ON players(game_id);
-CREATE INDEX idx_player_hands_player_id ON player_hands(player_id);
-CREATE INDEX idx_game_states_game_id ON game_states(game_id);
-CREATE INDEX idx_active_events_game_id ON active_events(game_id);
-CREATE INDEX idx_game_log_game_id ON game_log(game_id);
-CREATE INDEX idx_discard_pile_game_id ON discard_pile(game_id);
+CREATE INDEX IF NOT EXISTS idx_games_game_code ON games(game_code);
+CREATE INDEX IF NOT EXISTS idx_games_status ON games(status);
+CREATE INDEX IF NOT EXISTS idx_players_game_id ON players(game_id);
+CREATE INDEX IF NOT EXISTS idx_player_hands_player_id ON player_hands(player_id);
+CREATE INDEX IF NOT EXISTS idx_game_states_game_id ON game_states(game_id);
+CREATE INDEX IF NOT EXISTS idx_active_events_game_id ON active_events(game_id);
+CREATE INDEX IF NOT EXISTS idx_game_log_game_id ON game_log(game_id);
+CREATE INDEX IF NOT EXISTS idx_discard_pile_game_id ON discard_pile(game_id);

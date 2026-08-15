@@ -12,7 +12,7 @@ import * as path from 'path';
  * not stored as reference data in the database.
  */
 
-async function seed() {
+export async function seedDatabase() {
   try {
     console.log('🌱 Starting database seed...\n');
 
@@ -95,4 +95,7 @@ async function seed() {
   }
 }
 
-seed();
+// Only run if executed directly
+if (require.main === module) {
+  seedDatabase();
+}
