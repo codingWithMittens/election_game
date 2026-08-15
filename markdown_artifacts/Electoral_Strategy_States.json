@@ -1,0 +1,510 @@
+{
+  "game": "Electoral Strategy: Campaign for the Presidency",
+  "version": "1.0",
+  "total_electoral_votes": 538,
+  "victory_threshold": 270,
+  "states": [
+    {
+      "abbreviation": "AL",
+      "name": "Alabama",
+      "electoral_votes": 9,
+      "starting_lean": -13,
+      "lean_category": "Safe Red",
+      "priority_issues": ["Economy", "Social"],
+      "region": "South"
+    },
+    {
+      "abbreviation": "AK",
+      "name": "Alaska",
+      "electoral_votes": 3,
+      "starting_lean": -11,
+      "lean_category": "Safe Red",
+      "priority_issues": ["Energy", "Environment"],
+      "region": "West"
+    },
+    {
+      "abbreviation": "AZ",
+      "name": "Arizona",
+      "electoral_votes": 11,
+      "starting_lean": 0,
+      "lean_category": "Swing",
+      "priority_issues": ["Immigration", "Economy"],
+      "region": "Southwest"
+    },
+    {
+      "abbreviation": "AR",
+      "name": "Arkansas",
+      "electoral_votes": 6,
+      "starting_lean": -12,
+      "lean_category": "Safe Red",
+      "priority_issues": ["Economy", "Education"],
+      "region": "South"
+    },
+    {
+      "abbreviation": "CA",
+      "name": "California",
+      "electoral_votes": 54,
+      "starting_lean": 12,
+      "lean_category": "Safe Blue",
+      "priority_issues": ["Environment", "Technology", "Healthcare"],
+      "region": "West"
+    },
+    {
+      "abbreviation": "CO",
+      "name": "Colorado",
+      "electoral_votes": 10,
+      "starting_lean": 7,
+      "lean_category": "Lean Blue",
+      "priority_issues": ["Environment", "Education"],
+      "region": "West"
+    },
+    {
+      "abbreviation": "CT",
+      "name": "Connecticut",
+      "electoral_votes": 7,
+      "starting_lean": 11,
+      "lean_category": "Safe Blue",
+      "priority_issues": ["Healthcare", "Economy"],
+      "region": "Northeast"
+    },
+    {
+      "abbreviation": "DE",
+      "name": "Delaware",
+      "electoral_votes": 3,
+      "starting_lean": 11,
+      "lean_category": "Safe Blue",
+      "priority_issues": ["Economy", "Healthcare"],
+      "region": "Northeast"
+    },
+    {
+      "abbreviation": "FL",
+      "name": "Florida",
+      "electoral_votes": 30,
+      "starting_lean": -6,
+      "lean_category": "Lean Red",
+      "priority_issues": ["Healthcare", "Economy", "Immigration"],
+      "region": "South"
+    },
+    {
+      "abbreviation": "GA",
+      "name": "Georgia",
+      "electoral_votes": 16,
+      "starting_lean": 1,
+      "lean_category": "Swing",
+      "priority_issues": ["Economy", "Social"],
+      "region": "South"
+    },
+    {
+      "abbreviation": "HI",
+      "name": "Hawaii",
+      "electoral_votes": 4,
+      "starting_lean": 14,
+      "lean_category": "Safe Blue",
+      "priority_issues": ["Environment", "Economy"],
+      "region": "West"
+    },
+    {
+      "abbreviation": "ID",
+      "name": "Idaho",
+      "electoral_votes": 4,
+      "starting_lean": -12,
+      "lean_category": "Safe Red",
+      "priority_issues": ["Economy", "Environment"],
+      "region": "West"
+    },
+    {
+      "abbreviation": "IL",
+      "name": "Illinois",
+      "electoral_votes": 19,
+      "starting_lean": 10,
+      "lean_category": "Safe Blue",
+      "priority_issues": ["Economy", "Healthcare"],
+      "region": "Midwest"
+    },
+    {
+      "abbreviation": "IN",
+      "name": "Indiana",
+      "electoral_votes": 11,
+      "starting_lean": -10,
+      "lean_category": "Safe Red",
+      "priority_issues": ["Economy", "Manufacturing"],
+      "region": "Midwest"
+    },
+    {
+      "abbreviation": "IA",
+      "name": "Iowa",
+      "electoral_votes": 6,
+      "starting_lean": -6,
+      "lean_category": "Lean Red",
+      "priority_issues": ["Economy", "Agriculture"],
+      "region": "Midwest"
+    },
+    {
+      "abbreviation": "KS",
+      "name": "Kansas",
+      "electoral_votes": 6,
+      "starting_lean": -10,
+      "lean_category": "Safe Red",
+      "priority_issues": ["Economy", "Agriculture"],
+      "region": "Midwest"
+    },
+    {
+      "abbreviation": "KY",
+      "name": "Kentucky",
+      "electoral_votes": 8,
+      "starting_lean": -12,
+      "lean_category": "Safe Red",
+      "priority_issues": ["Economy", "Healthcare"],
+      "region": "South"
+    },
+    {
+      "abbreviation": "LA",
+      "name": "Louisiana",
+      "electoral_votes": 8,
+      "starting_lean": -10,
+      "lean_category": "Safe Red",
+      "priority_issues": ["Energy", "Economy"],
+      "region": "South"
+    },
+    {
+      "abbreviation": "ME",
+      "name": "Maine",
+      "electoral_votes": 4,
+      "starting_lean": 6,
+      "lean_category": "Lean Blue",
+      "priority_issues": ["Economy", "Healthcare"],
+      "region": "Northeast",
+      "special": "Split electoral votes (2 statewide + 1 per district)"
+    },
+    {
+      "abbreviation": "MD",
+      "name": "Maryland",
+      "electoral_votes": 10,
+      "starting_lean": 12,
+      "lean_category": "Safe Blue",
+      "priority_issues": ["Healthcare", "Education"],
+      "region": "Northeast"
+    },
+    {
+      "abbreviation": "MA",
+      "name": "Massachusetts",
+      "electoral_votes": 11,
+      "starting_lean": 13,
+      "lean_category": "Safe Blue",
+      "priority_issues": ["Healthcare", "Education", "Technology"],
+      "region": "Northeast"
+    },
+    {
+      "abbreviation": "MI",
+      "name": "Michigan",
+      "electoral_votes": 15,
+      "starting_lean": 1,
+      "lean_category": "Swing",
+      "priority_issues": ["Economy", "Manufacturing"],
+      "region": "Midwest"
+    },
+    {
+      "abbreviation": "MN",
+      "name": "Minnesota",
+      "electoral_votes": 10,
+      "starting_lean": 5,
+      "lean_category": "Lean Blue",
+      "priority_issues": ["Healthcare", "Economy"],
+      "region": "Midwest"
+    },
+    {
+      "abbreviation": "MS",
+      "name": "Mississippi",
+      "electoral_votes": 6,
+      "starting_lean": -14,
+      "lean_category": "Safe Red",
+      "priority_issues": ["Economy", "Education"],
+      "region": "South"
+    },
+    {
+      "abbreviation": "MO",
+      "name": "Missouri",
+      "electoral_votes": 10,
+      "starting_lean": -10,
+      "lean_category": "Safe Red",
+      "priority_issues": ["Economy", "Healthcare"],
+      "region": "Midwest"
+    },
+    {
+      "abbreviation": "MT",
+      "name": "Montana",
+      "electoral_votes": 4,
+      "starting_lean": -8,
+      "lean_category": "Lean Red",
+      "priority_issues": ["Environment", "Economy"],
+      "region": "West"
+    },
+    {
+      "abbreviation": "NE",
+      "name": "Nebraska",
+      "electoral_votes": 5,
+      "starting_lean": -11,
+      "lean_category": "Safe Red",
+      "priority_issues": ["Economy", "Agriculture"],
+      "region": "Midwest",
+      "special": "Split electoral votes (2 statewide + 1 per district)"
+    },
+    {
+      "abbreviation": "NV",
+      "name": "Nevada",
+      "electoral_votes": 6,
+      "starting_lean": 2,
+      "lean_category": "Swing",
+      "priority_issues": ["Economy", "Immigration"],
+      "region": "West"
+    },
+    {
+      "abbreviation": "NH",
+      "name": "New Hampshire",
+      "electoral_votes": 4,
+      "starting_lean": 5,
+      "lean_category": "Lean Blue",
+      "priority_issues": ["Economy", "Healthcare"],
+      "region": "Northeast"
+    },
+    {
+      "abbreviation": "NJ",
+      "name": "New Jersey",
+      "electoral_votes": 14,
+      "starting_lean": 10,
+      "lean_category": "Safe Blue",
+      "priority_issues": ["Healthcare", "Economy"],
+      "region": "Northeast"
+    },
+    {
+      "abbreviation": "NM",
+      "name": "New Mexico",
+      "electoral_votes": 5,
+      "starting_lean": 6,
+      "lean_category": "Lean Blue",
+      "priority_issues": ["Immigration", "Energy"],
+      "region": "Southwest"
+    },
+    {
+      "abbreviation": "NY",
+      "name": "New York",
+      "electoral_votes": 28,
+      "starting_lean": 11,
+      "lean_category": "Safe Blue",
+      "priority_issues": ["Healthcare", "Economy", "Technology"],
+      "region": "Northeast"
+    },
+    {
+      "abbreviation": "NC",
+      "name": "North Carolina",
+      "electoral_votes": 16,
+      "starting_lean": -2,
+      "lean_category": "Swing",
+      "priority_issues": ["Economy", "Healthcare"],
+      "region": "South"
+    },
+    {
+      "abbreviation": "ND",
+      "name": "North Dakota",
+      "electoral_votes": 3,
+      "starting_lean": -12,
+      "lean_category": "Safe Red",
+      "priority_issues": ["Energy", "Economy"],
+      "region": "Midwest"
+    },
+    {
+      "abbreviation": "OH",
+      "name": "Ohio",
+      "electoral_votes": 17,
+      "starting_lean": -7,
+      "lean_category": "Lean Red",
+      "priority_issues": ["Economy", "Manufacturing"],
+      "region": "Midwest"
+    },
+    {
+      "abbreviation": "OK",
+      "name": "Oklahoma",
+      "electoral_votes": 7,
+      "starting_lean": -12,
+      "lean_category": "Safe Red",
+      "priority_issues": ["Energy", "Economy"],
+      "region": "South"
+    },
+    {
+      "abbreviation": "OR",
+      "name": "Oregon",
+      "electoral_votes": 8,
+      "starting_lean": 10,
+      "lean_category": "Safe Blue",
+      "priority_issues": ["Environment", "Technology"],
+      "region": "West"
+    },
+    {
+      "abbreviation": "PA",
+      "name": "Pennsylvania",
+      "electoral_votes": 19,
+      "starting_lean": 0,
+      "lean_category": "Swing",
+      "priority_issues": ["Economy", "Healthcare", "Manufacturing"],
+      "region": "Northeast"
+    },
+    {
+      "abbreviation": "RI",
+      "name": "Rhode Island",
+      "electoral_votes": 4,
+      "starting_lean": 12,
+      "lean_category": "Safe Blue",
+      "priority_issues": ["Healthcare", "Economy"],
+      "region": "Northeast"
+    },
+    {
+      "abbreviation": "SC",
+      "name": "South Carolina",
+      "electoral_votes": 9,
+      "starting_lean": -10,
+      "lean_category": "Safe Red",
+      "priority_issues": ["Economy", "Military"],
+      "region": "South"
+    },
+    {
+      "abbreviation": "SD",
+      "name": "South Dakota",
+      "electoral_votes": 3,
+      "starting_lean": -11,
+      "lean_category": "Safe Red",
+      "priority_issues": ["Economy", "Agriculture"],
+      "region": "Midwest"
+    },
+    {
+      "abbreviation": "TN",
+      "name": "Tennessee",
+      "electoral_votes": 11,
+      "starting_lean": -11,
+      "lean_category": "Safe Red",
+      "priority_issues": ["Economy", "Healthcare"],
+      "region": "South"
+    },
+    {
+      "abbreviation": "TX",
+      "name": "Texas",
+      "electoral_votes": 40,
+      "starting_lean": -10,
+      "lean_category": "Safe Red",
+      "priority_issues": ["Economy", "Energy", "Immigration"],
+      "region": "South"
+    },
+    {
+      "abbreviation": "UT",
+      "name": "Utah",
+      "electoral_votes": 6,
+      "starting_lean": -11,
+      "lean_category": "Safe Red",
+      "priority_issues": ["Economy", "Social"],
+      "region": "West"
+    },
+    {
+      "abbreviation": "VT",
+      "name": "Vermont",
+      "electoral_votes": 3,
+      "starting_lean": 15,
+      "lean_category": "Safe Blue",
+      "priority_issues": ["Healthcare", "Environment"],
+      "region": "Northeast"
+    },
+    {
+      "abbreviation": "VA",
+      "name": "Virginia",
+      "electoral_votes": 13,
+      "starting_lean": 6,
+      "lean_category": "Lean Blue",
+      "priority_issues": ["Military", "Technology", "Economy"],
+      "region": "South"
+    },
+    {
+      "abbreviation": "WA",
+      "name": "Washington",
+      "electoral_votes": 12,
+      "starting_lean": 11,
+      "lean_category": "Safe Blue",
+      "priority_issues": ["Technology", "Environment"],
+      "region": "West"
+    },
+    {
+      "abbreviation": "WV",
+      "name": "West Virginia",
+      "electoral_votes": 4,
+      "starting_lean": -15,
+      "lean_category": "Safe Red",
+      "priority_issues": ["Energy", "Economy"],
+      "region": "South"
+    },
+    {
+      "abbreviation": "WI",
+      "name": "Wisconsin",
+      "electoral_votes": 10,
+      "starting_lean": 0,
+      "lean_category": "Swing",
+      "priority_issues": ["Economy", "Manufacturing"],
+      "region": "Midwest"
+    },
+    {
+      "abbreviation": "WY",
+      "name": "Wyoming",
+      "electoral_votes": 3,
+      "starting_lean": -14,
+      "lean_category": "Safe Red",
+      "priority_issues": ["Energy", "Environment"],
+      "region": "West"
+    },
+    {
+      "abbreviation": "DC",
+      "name": "District of Columbia",
+      "electoral_votes": 3,
+      "starting_lean": 15,
+      "lean_category": "Safe Blue",
+      "priority_issues": ["Government", "Social"],
+      "region": "Northeast"
+    }
+  ],
+  "swing_states": [
+    "PA",
+    "MI",
+    "WI",
+    "AZ",
+    "GA",
+    "NC",
+    "NV"
+  ],
+  "lean_categories": {
+    "Safe Blue": {
+      "range": [10, 15],
+      "description": "Very unlikely to flip",
+      "states": 13
+    },
+    "Lean Blue": {
+      "range": [5, 9],
+      "description": "Mostly stable, but can shift",
+      "states": 6
+    },
+    "Swing": {
+      "range": [-4, 4],
+      "description": "Highly contested battlegrounds",
+      "states": 7
+    },
+    "Lean Red": {
+      "range": [-9, -5],
+      "description": "Mostly stable, but can shift",
+      "states": 4
+    },
+    "Safe Red": {
+      "range": [-15, -10],
+      "description": "Very unlikely to flip",
+      "states": 20
+    }
+  },
+  "control_thresholds": {
+    "you_control": 7,
+    "opponent_controls": -7,
+    "contested_range": [-6, 6]
+  }
+}

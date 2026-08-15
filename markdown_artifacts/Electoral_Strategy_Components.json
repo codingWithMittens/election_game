@@ -1,0 +1,170 @@
+{
+  "game": "Electoral Strategy: Campaign for the Presidency",
+  "version": "1.0",
+  "components": {
+    "cards": {
+      "total": 85,
+      "breakdown": {
+        "policy_cards": 30,
+        "campaign_cards": 20,
+        "event_cards": 25,
+        "running_mate_cards": 4,
+        "debate_cards": 3,
+        "wild_cards": 3
+      },
+      "dimensions": {
+        "width_inches": 2.5,
+        "height_inches": 3.5,
+        "width_mm": 63.5,
+        "height_mm": 88.9,
+        "card_type": "Poker size"
+      },
+      "print_specifications": {
+        "bleed": "0.125 inches (3.175mm)",
+        "safe_zone": "0.25 inches (6.35mm) from edge",
+        "resolution": "300 DPI",
+        "color_mode": "CMYK for professional print, RGB for home"
+      }
+    },
+    "game_board": {
+      "quantity": 1,
+      "dimensions": {
+        "width_inches": 24,
+        "height_inches": 18,
+        "width_cm": 61,
+        "height_cm": 45.7
+      },
+      "components": [
+        "US Electoral Map with all 50 states + DC",
+        "Round Tracker (12 rounds)",
+        "Active Events Area (4 card slots)",
+        "Score Tracker (up to 4 players)"
+      ]
+    },
+    "tokens": {
+      "lean_markers": {
+        "quantity": 60,
+        "breakdown": "15 per player (4 players)",
+        "size_mm": 20,
+        "shape": "Square or circular",
+        "colors": ["Blue (#3B82F6)", "Red (#EF4444)", "Green (#10B981)", "Yellow (#F59E0B)"]
+      },
+      "rally_markers": {
+        "quantity": 12,
+        "breakdown": "3 per player max",
+        "size_mm": 15,
+        "shape": "Star",
+        "color": "Purple (#8B5CF6)",
+        "symbol": "R"
+      },
+      "campaign_point_tokens": {
+        "1_point": {
+          "quantity": 40,
+          "size_mm": 15,
+          "color": "White"
+        },
+        "5_point": {
+          "quantity": 20,
+          "size_mm": 20,
+          "color": "Blue"
+        },
+        "10_point": {
+          "quantity": 10,
+          "size_mm": 25,
+          "color": "Red"
+        }
+      },
+      "round_tracker_marker": {
+        "quantity": 1,
+        "size_mm": 30,
+        "color": "Blue (#2C5F99)",
+        "shape": "Circle"
+      },
+      "duration_counters": {
+        "quantity": 16,
+        "breakdown": "4 per active event slot",
+        "size_mm": 12,
+        "color": "Orange (#F39C12)",
+        "shape": "Circle",
+        "values": [1, 2, 3, 4]
+      }
+    },
+    "dice": {
+      "quantity": 2,
+      "type": "Six-sided (d6)",
+      "size_mm": 16,
+      "color": "Standard (white with black pips)"
+    },
+    "rulebook": {
+      "quantity": 1,
+      "pages": 16,
+      "size": "5.5 x 8.5 inches (digest size)"
+    },
+    "quick_reference_cards": {
+      "quantity": 4,
+      "breakdown": "1 per player",
+      "size": "4 x 6 inches (index card size)",
+      "double_sided": true,
+      "content": "Turn structure, dice mechanics, victory conditions"
+    },
+    "optional_accessories": {
+      "card_sleeves": {
+        "quantity": 100,
+        "size": "Standard poker size (66mm x 91mm)",
+        "recommended": "Penny sleeves or premium card sleeves"
+      },
+      "storage_box": {
+        "type": "Standard board game box or custom tuck box",
+        "dimensions": "10 x 10 x 2 inches"
+      }
+    }
+  },
+  "player_setup": {
+    "per_player": {
+      "starting_hand": 7,
+      "starting_campaign_points": 5,
+      "running_mate_card": 1,
+      "lean_markers": 15,
+      "rally_markers": 3,
+      "quick_reference_card": 1
+    },
+    "player_count": {
+      "minimum": 2,
+      "maximum": 4,
+      "recommended": "2-3 for tighter competition"
+    }
+  },
+  "production_estimates": {
+    "print_and_play": {
+      "cost_usd": "30-60",
+      "components": {
+        "cards": "Print on cardstock at home or print shop",
+        "board": "24x18 poster print and foam board mount",
+        "tokens": "Print and cut cardstock circles/squares",
+        "dice": "Purchase standard d6"
+      }
+    },
+    "professional_prototype": {
+      "cost_usd": "60-85",
+      "service": "TheGameCrafter.com or similar",
+      "components": {
+        "cards": "$0.18 per card x 85 = $15.30",
+        "board": "$25-40 for folding game board",
+        "tokens": "$10-15 for chipboard tokens",
+        "box": "$8-12"
+      }
+    },
+    "bulk_production": {
+      "cost_per_unit_usd": "8-12",
+      "minimum_order": "500 units",
+      "total_investment": "$4,000-6,000",
+      "services": ["PrintNinja", "Panda Game Manufacturing"]
+    }
+  },
+  "weight_and_dimensions": {
+    "total_weight_grams": 800,
+    "total_weight_lbs": 1.76,
+    "box_dimensions_inches": "10 x 10 x 2",
+    "shipping_weight_lbs": 2.5
+  }
+}

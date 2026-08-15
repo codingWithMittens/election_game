@@ -1,0 +1,32 @@
+{
+  "name": "electoral-strategy-backend",
+  "version": "1.0.0",
+  "description": "Electoral Strategy multiplayer game backend",
+  "main": "dist/server.js",
+  "scripts": {
+    "dev": "nodemon src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "db:setup": "psql electoral_strategy -f src/db/schema.sql",
+    "db:seed": "ts-node src/db/seed.ts"
+  },
+  "keywords": ["game", "multiplayer", "electoral"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.6.1",
+    "pg": "^8.11.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.10.6",
+    "@types/pg": "^8.10.9",
+    "@types/cors": "^2.8.17",
+    "typescript": "^5.3.3",
+    "ts-node": "^10.9.2",
+    "nodemon": "^3.0.2"
+  }
+}
