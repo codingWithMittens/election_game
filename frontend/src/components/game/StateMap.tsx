@@ -15,12 +15,14 @@ interface StateMapProps {
   gameStates: GameStateData[];
   onStateClick?: (stateAbbr: string) => void;
   selectedStates?: string[];
+  playerParty?: 'Democrat' | 'Republican' | null;
+  cardEffect?: 'positive' | 'negative' | null;
 }
 
 type SortOption = 'alphabetical' | 'lean' | 'electoral_votes' | 'swing_states' | 'region';
 type ViewMode = 'grid' | 'map';
 
-function StateMap({ gameStates, onStateClick, selectedStates = [] }: StateMapProps) {
+function StateMap({ gameStates, onStateClick, selectedStates = [], playerParty = null, cardEffect = null }: StateMapProps) {
   const [sortBy, setSortBy] = useState<SortOption>('alphabetical');
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const getStateColor = (lean: number): string => {
@@ -151,16 +153,44 @@ function StateMap({ gameStates, onStateClick, selectedStates = [] }: StateMapPro
             const color = getStateColor(lean);
             const isSelected = selectedStates.includes(state.abbreviation);
 
+            // Determine selection visual treatment based on card effect
+            let selectionClass = '';
+            let selectionBorder = '';
+            let selectionBadge = null;
+
+            if (isSelected && cardEffect) {
+              if (cardEffect === 'positive') {
+                selectionClass = 'ring-8 ring-green-400 shadow-2xl transform scale-110 animate-pulse';
+                selectionBorder = 'border-4 border-green-300';
+                selectionBadge = (
+                  <div className="absolute -top-2 -right-2 bg-green-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-lg font-bold shadow-lg">
+                    ✓
+                  </div>
+                );
+              } else if (cardEffect === 'negative') {
+                selectionClass = 'ring-8 ring-red-400 shadow-2xl transform scale-110 animate-pulse';
+                selectionBorder = 'border-4 border-red-300';
+                selectionBadge = (
+                  <div className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-lg font-bold shadow-lg">
+                    ⚠
+                  </div>
+                );
+              }
+            } else if (isSelected) {
+              selectionClass = 'ring-6 ring-yellow-400 shadow-xl transform scale-105';
+            }
+
             return (
               <button
                 key={state.abbreviation}
                 onClick={() => onStateClick?.(state.abbreviation)}
-                className={`p-3 rounded-lg transition-all duration-200 ${
-                  isSelected ? 'ring-4 ring-yellow-400 shadow-lg transform scale-105' : 'hover:shadow-lg'
+                className={`relative p-3 rounded-lg transition-all duration-200 ${selectionBorder} ${
+                  isSelected ? selectionClass : 'hover:shadow-lg'
                 } ${onStateClick ? 'cursor-pointer' : 'cursor-default'}`}
                 style={{ backgroundColor: color }}
                 disabled={!onStateClick}
               >
+                {selectionBadge}
                 <div className="text-white text-center">
                   <div className="text-lg font-bold mb-1">{state.abbreviation}</div>
                   <div className="text-xs opacity-90">{state.electoral_votes} EV</div>
@@ -170,6 +200,13 @@ function StateMap({ gameStates, onStateClick, selectedStates = [] }: StateMapPro
                   <div className="text-xs font-semibold mt-1 opacity-90">
                     {getLeanCategory(lean)}
                   </div>
+                  {isSelected && cardEffect && (
+                    <div className={`text-xs font-bold mt-2 px-2 py-1 rounded ${
+                      cardEffect === 'positive' ? 'bg-green-500' : 'bg-red-500'
+                    }`}>
+                      {cardEffect === 'positive' ? 'HELPS YOU' : 'HURTS YOU'}
+                    </div>
+                  )}
                 </div>
               </button>
             );
@@ -182,6 +219,7 @@ function StateMap({ gameStates, onStateClick, selectedStates = [] }: StateMapPro
           onStateClick={onStateClick}
           selectedStates={selectedStates}
           getStateColor={getStateColor}
+          cardEffect={cardEffect}
         />
       )}
     </div>

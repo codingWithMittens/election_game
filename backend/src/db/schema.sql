@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS games (
   current_round INTEGER DEFAULT 0,
   current_turn_player_id UUID,
   cards_played_this_turn INTEGER DEFAULT 0,
+  incumbent_party VARCHAR(20) CHECK (incumbent_party IN ('Democrat', 'Republican')),
   settings JSONB DEFAULT '{"maxPlayers": 4, "startingHandSize": 5}',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   started_at TIMESTAMP,

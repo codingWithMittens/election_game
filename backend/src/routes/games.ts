@@ -33,12 +33,15 @@ router.post('/create', async (req: Request, res: Response) => {
       }
     }
 
+    // Randomly select incumbent party
+    const incumbentParty = Math.random() < 0.5 ? 'Democrat' : 'Republican';
+
     // Create game
     const gameResult = await query(
-      `INSERT INTO games (game_code, status) 
-       VALUES ($1, 'lobby') 
-       RETURNING id, game_code`,
-      [gameCode]
+      `INSERT INTO games (game_code, status, incumbent_party)
+       VALUES ($1, 'lobby', $2)
+       RETURNING id, game_code, incumbent_party`,
+      [gameCode, incumbentParty]
     );
 
     const game = gameResult.rows[0];
@@ -68,7 +71,7 @@ router.post('/create', async (req: Request, res: Response) => {
       );
     }
 
-    res.json({
+    res.status(201).json({
       gameId: game.id,
       gameCode: game.game_code,
       playerId: player.id

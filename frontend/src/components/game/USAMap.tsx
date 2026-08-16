@@ -13,6 +13,7 @@ interface USAMapProps {
   onStateClick?: (stateAbbr: string) => void;
   selectedStates?: string[];
   getStateColor: (lean: number) => string;
+  cardEffect?: 'positive' | 'negative' | null;
 }
 
 interface TooltipData {
@@ -24,7 +25,7 @@ interface TooltipData {
   y: number;
 }
 
-function USAMap({ statesData, onStateClick, selectedStates = [], getStateColor }: USAMapProps) {
+function USAMap({ statesData, onStateClick, selectedStates = [], getStateColor, cardEffect = null }: USAMapProps) {
   const svgContainerRef = useRef<HTMLDivElement>(null);
   const [tooltip, setTooltip] = useState<TooltipData | null>(null);
 
@@ -62,13 +63,25 @@ function USAMap({ statesData, onStateClick, selectedStates = [], getStateColor }
                 // Apply fill color
                 (statePath as SVGElement).style.fill = color;
 
-                // Apply stroke for selected states
-                if (isSelected) {
-                  (statePath as SVGElement).style.stroke = '#facc15';
-                  (statePath as SVGElement).style.strokeWidth = '3';
+                // Apply stroke for selected states with positive/negative indicators
+                if (isSelected && cardEffect) {
+                  if (cardEffect === 'positive') {
+                    (statePath as SVGElement).style.stroke = '#22c55e'; // green-500
+                    (statePath as SVGElement).style.strokeWidth = '6';
+                    (statePath as SVGElement).style.filter = 'drop-shadow(0 0 8px rgba(34, 197, 94, 0.8))';
+                  } else if (cardEffect === 'negative') {
+                    (statePath as SVGElement).style.stroke = '#ef4444'; // red-500
+                    (statePath as SVGElement).style.strokeWidth = '6';
+                    (statePath as SVGElement).style.filter = 'drop-shadow(0 0 8px rgba(239, 68, 68, 0.8))';
+                  }
+                } else if (isSelected) {
+                  (statePath as SVGElement).style.stroke = '#facc15'; // yellow-400
+                  (statePath as SVGElement).style.strokeWidth = '4';
+                  (statePath as SVGElement).style.filter = 'drop-shadow(0 0 6px rgba(250, 204, 21, 0.6))';
                 } else {
                   (statePath as SVGElement).style.stroke = '#ffffff';
                   (statePath as SVGElement).style.strokeWidth = '1';
+                  (statePath as SVGElement).style.filter = 'none';
                 }
 
                 // Add hover effect and tooltip (always enabled)

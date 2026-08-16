@@ -28,6 +28,11 @@ interface EndTurnData {
   playerId: string;
 }
 
+interface EndGameData {
+  gameId: string;
+  playerId: string;
+}
+
 export function initializeSocketHandlers(io: Server) {
   io.on('connection', (socket: Socket) => {
     console.log('Client connected:', socket.id);
@@ -56,6 +61,25 @@ export function initializeSocketHandlers(io: Server) {
         'SELECT * FROM game_states WHERE game_id = $1',
         [gameId]
       );
+
+      // Get player's hand if game is in progress
+      const game = gameResult.rows[0];
+      if (game.status === 'in_progress') {
+        const handResult = await query(
+          'SELECT card_id FROM player_hands WHERE player_id = $1',
+          [playerId]
+        );
+
+        const hand = handResult.rows.map(row =>
+          cardsData.find(c => c.id === row.card_id)
+        );
+
+        // Send hand to the specific player
+        socket.emit('hand_updated', {
+          playerId,
+          hand
+        });
+      }
 
       // Broadcast player joined
       io.to(gameId).emit('player_joined', {
@@ -285,6 +309,12 @@ export function initializeSocketHandlers(io: Server) {
           cardsData.find(c => c.id === row.card_id)
         );
 
+        // Get updated cards_played_this_turn
+        const updatedGame = await query(
+          'SELECT cards_played_this_turn FROM games WHERE id = $1',
+          [gameId]
+        );
+
         // Broadcast card played
         io.to(gameId).emit('card_played', {
           playerId,
@@ -292,7 +322,8 @@ export function initializeSocketHandlers(io: Server) {
           cardName: card.name,
           targetStates,
           diceRoll,
-          states: statesResult.rows
+          states: statesResult.rows,
+          cardsPlayedThisTurn: updatedGame.rows[0].cards_played_this_turn
         });
 
         io.to(gameId).emit('hand_updated', {
@@ -312,8 +343,93 @@ export function initializeSocketHandlers(io: Server) {
 
           // Auto-end turn after a brief delay (1.5 seconds)
           setTimeout(async () => {
-            // Trigger the end_turn logic
-            socket.emit('end_turn', { gameId, playerId });
+            try {
+              // Execute end turn logic directly
+              const gameResult = await query('SELECT * FROM games WHERE id = $1', [gameId]);
+              const game = gameResult.rows[0];
+
+              const playersResult = await query(
+                'SELECT * FROM players WHERE game_id = $1 ORDER BY turn_order',
+                [gameId]
+              );
+
+              const players = playersResult.rows;
+              const currentPlayerIndex = players.findIndex(p => p.id === playerId);
+              const nextPlayerIndex = (currentPlayerIndex + 1) % players.length;
+              const nextPlayer = players[nextPlayerIndex];
+
+              let newRound = game.current_round;
+              if (nextPlayerIndex === 0) {
+                newRound += 1;
+              }
+
+              const statesResult = await query('SELECT * FROM game_states WHERE game_id = $1', [gameId]);
+              const electoralVotes = calculateElectoralVotes(statesResult.rows, players);
+
+              for (const [playerId, votes] of Object.entries(electoralVotes)) {
+                await query('UPDATE players SET electoral_votes = $1 WHERE id = $2', [votes, playerId]);
+              }
+
+              await query(
+                `UPDATE games SET current_turn_player_id = $1, current_round = $2, cards_played_this_turn = 0 WHERE id = $3`,
+                [nextPlayer.id, newRound, gameId]
+              );
+
+              const nextPlayerHandResult = await query(
+                'SELECT card_id FROM player_hands WHERE player_id = $1',
+                [nextPlayer.id]
+              );
+              const cardsInHand = nextPlayerHandResult.rows.length;
+              const cardsToRefill = Math.max(0, 5 - cardsInHand);
+
+              if (cardsToRefill > 0) {
+                const usedCardsResult = await query(
+                  `SELECT DISTINCT ph.card_id
+                   FROM player_hands ph
+                   JOIN players p ON ph.player_id = p.id
+                   WHERE p.game_id = $1`,
+                  [gameId]
+                );
+                const discardedCardsResult = await query(
+                  'SELECT card_id FROM discard_pile WHERE game_id = $1',
+                  [gameId]
+                );
+                const usedCardIds = usedCardsResult.rows.map(r => r.card_id);
+                const discardedCardIds = discardedCardsResult.rows.map(r => r.card_id);
+                const allUsedCardIds = [...usedCardIds, ...discardedCardIds];
+                const availableCards = cardsData.filter(c => !allUsedCardIds.includes(c.id));
+
+                const newCards = [];
+                for (let i = 0; i < Math.min(cardsToRefill, availableCards.length); i++) {
+                  const randomIndex = Math.floor(Math.random() * availableCards.length);
+                  const newCard = availableCards.splice(randomIndex, 1)[0];
+                  newCards.push(newCard);
+                  await query(
+                    'INSERT INTO player_hands (player_id, card_id) VALUES ($1, $2)',
+                    [nextPlayer.id, newCard.id]
+                  );
+                }
+              }
+
+              io.to(gameId).emit('turn_ended', {
+                nextPlayerId: nextPlayer.id,
+                currentRound: newRound
+              });
+
+              const nextPlayerHandRefreshed = await query(
+                'SELECT card_id FROM player_hands WHERE player_id = $1',
+                [nextPlayer.id]
+              );
+              const hand = nextPlayerHandRefreshed.rows.map(row =>
+                cardsData.find(c => c.id === row.card_id)
+              );
+              io.to(gameId).emit('hand_updated', {
+                playerId: nextPlayer.id,
+                hand
+              });
+            } catch (error) {
+              console.error('Error auto-ending turn:', error);
+            }
           }, 1500);
         }
       } catch (error) {
@@ -385,10 +501,17 @@ export function initializeSocketHandlers(io: Server) {
         // Get card name for broadcast
         const card = cardsData.find(c => c.id === cardId);
 
+        // Get updated cards_played_this_turn
+        const updatedGame = await query(
+          'SELECT cards_played_this_turn FROM games WHERE id = $1',
+          [gameId]
+        );
+
         // Broadcast card discarded
         io.to(gameId).emit('card_discarded', {
           playerId,
-          cardName: card?.name || 'Unknown card'
+          cardName: card?.name || 'Unknown card',
+          cardsPlayedThisTurn: updatedGame.rows[0].cards_played_this_turn
         });
 
         io.to(gameId).emit('hand_updated', {
@@ -408,8 +531,93 @@ export function initializeSocketHandlers(io: Server) {
 
           // Auto-end turn after a brief delay (1.5 seconds)
           setTimeout(async () => {
-            // Trigger the end_turn logic
-            socket.emit('end_turn', { gameId, playerId });
+            try {
+              // Execute end turn logic directly
+              const gameResult = await query('SELECT * FROM games WHERE id = $1', [gameId]);
+              const game = gameResult.rows[0];
+
+              const playersResult = await query(
+                'SELECT * FROM players WHERE game_id = $1 ORDER BY turn_order',
+                [gameId]
+              );
+
+              const players = playersResult.rows;
+              const currentPlayerIndex = players.findIndex(p => p.id === playerId);
+              const nextPlayerIndex = (currentPlayerIndex + 1) % players.length;
+              const nextPlayer = players[nextPlayerIndex];
+
+              let newRound = game.current_round;
+              if (nextPlayerIndex === 0) {
+                newRound += 1;
+              }
+
+              const statesResult = await query('SELECT * FROM game_states WHERE game_id = $1', [gameId]);
+              const electoralVotes = calculateElectoralVotes(statesResult.rows, players);
+
+              for (const [playerId, votes] of Object.entries(electoralVotes)) {
+                await query('UPDATE players SET electoral_votes = $1 WHERE id = $2', [votes, playerId]);
+              }
+
+              await query(
+                `UPDATE games SET current_turn_player_id = $1, current_round = $2, cards_played_this_turn = 0 WHERE id = $3`,
+                [nextPlayer.id, newRound, gameId]
+              );
+
+              const nextPlayerHandResult = await query(
+                'SELECT card_id FROM player_hands WHERE player_id = $1',
+                [nextPlayer.id]
+              );
+              const cardsInHand = nextPlayerHandResult.rows.length;
+              const cardsToRefill = Math.max(0, 5 - cardsInHand);
+
+              if (cardsToRefill > 0) {
+                const usedCardsResult = await query(
+                  `SELECT DISTINCT ph.card_id
+                   FROM player_hands ph
+                   JOIN players p ON ph.player_id = p.id
+                   WHERE p.game_id = $1`,
+                  [gameId]
+                );
+                const discardedCardsResult = await query(
+                  'SELECT card_id FROM discard_pile WHERE game_id = $1',
+                  [gameId]
+                );
+                const usedCardIds = usedCardsResult.rows.map(r => r.card_id);
+                const discardedCardIds = discardedCardsResult.rows.map(r => r.card_id);
+                const allUsedCardIds = [...usedCardIds, ...discardedCardIds];
+                const availableCards = cardsData.filter(c => !allUsedCardIds.includes(c.id));
+
+                const newCards = [];
+                for (let i = 0; i < Math.min(cardsToRefill, availableCards.length); i++) {
+                  const randomIndex = Math.floor(Math.random() * availableCards.length);
+                  const newCard = availableCards.splice(randomIndex, 1)[0];
+                  newCards.push(newCard);
+                  await query(
+                    'INSERT INTO player_hands (player_id, card_id) VALUES ($1, $2)',
+                    [nextPlayer.id, newCard.id]
+                  );
+                }
+              }
+
+              io.to(gameId).emit('turn_ended', {
+                nextPlayerId: nextPlayer.id,
+                currentRound: newRound
+              });
+
+              const nextPlayerHandRefreshed = await query(
+                'SELECT card_id FROM player_hands WHERE player_id = $1',
+                [nextPlayer.id]
+              );
+              const hand = nextPlayerHandRefreshed.rows.map(row =>
+                cardsData.find(c => c.id === row.card_id)
+              );
+              io.to(gameId).emit('hand_updated', {
+                playerId: nextPlayer.id,
+                hand
+              });
+            } catch (error) {
+              console.error('Error auto-ending turn:', error);
+            }
           }, 1500);
         }
       } catch (error) {
@@ -547,6 +755,39 @@ export function initializeSocketHandlers(io: Server) {
       } catch (error) {
         console.error('Error ending turn:', error);
         socket.emit('error', { message: 'Failed to end turn' });
+      }
+    });
+
+    /**
+     * End game - notify all players
+     */
+    socket.on('end_game', async (data: EndGameData) => {
+      const { gameId, playerId } = data;
+
+      try {
+        // Get player name who ended the game
+        const playerResult = await query(
+          'SELECT player_name FROM players WHERE id = $1',
+          [playerId]
+        );
+
+        const playerName = playerResult.rows[0]?.player_name || 'a player';
+
+        // Update game status to completed
+        await query(
+          'UPDATE games SET status = $1 WHERE id = $2',
+          ['completed', gameId]
+        );
+
+        // Broadcast to all players in the game
+        io.to(gameId).emit('game_ended', {
+          endedBy: playerName
+        });
+
+        console.log(`Game ${gameId} ended by ${playerName}`);
+      } catch (error) {
+        console.error('Error ending game:', error);
+        socket.emit('error', { message: 'Failed to end game' });
       }
     });
 

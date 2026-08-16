@@ -66,6 +66,9 @@ function Game() {
   // Copy link state
   const [linkCopied, setLinkCopied] = useState(false);
 
+  // End game confirmation
+  const [showEndGameConfirm, setShowEndGameConfirm] = useState(false);
+
   const playerId = localStorage.getItem('playerId');
   const gameCode = localStorage.getItem('gameCode');
 
@@ -74,6 +77,9 @@ function Game() {
       navigate('/');
       return;
     }
+
+    // Persist gameId in localStorage for page refresh
+    localStorage.setItem('currentGameId', gameId);
 
     const loadGameAndConnect = async () => {
       try {
@@ -129,6 +135,11 @@ function Game() {
 
           setStates(data.states);
 
+          // Update cards played this turn
+          if (data.cardsPlayedThisTurn !== undefined) {
+            setGame(prev => prev ? { ...prev, cards_played_this_turn: data.cardsPlayedThisTurn } : null);
+          }
+
           // Show card result notification
           if (data.cardId && data.cardName) {
             setCardResult({
@@ -145,8 +156,15 @@ function Game() {
           setSelectedStates([]);
         });
 
+        newSocket.on('card_discarded', (data) => {
+          // Update cards played this turn
+          if (data.cardsPlayedThisTurn !== undefined) {
+            setGame(prev => prev ? { ...prev, cards_played_this_turn: data.cardsPlayedThisTurn } : null);
+          }
+        });
+
         newSocket.on('turn_ended', (data) => {
-          setGame(prev => prev ? { ...prev, current_turn_player_id: data.nextPlayerId, current_round: data.currentRound } : null);
+          setGame(prev => prev ? { ...prev, current_turn_player_id: data.nextPlayerId, current_round: data.currentRound, cards_played_this_turn: 0 } : null);
         });
 
         newSocket.on('turn_limit_reached', (data) => {
@@ -159,6 +177,22 @@ function Game() {
         newSocket.on('error', (data) => {
           setError(data.message);
           setTimeout(() => setError(''), 5000);
+        });
+
+        newSocket.on('game_ended', (data) => {
+          // Show message that game was ended
+          setError(`Game ended by ${data.endedBy || 'a player'}`);
+
+          // Clear game state from localStorage
+          localStorage.removeItem('currentGameId');
+
+          // Disconnect and navigate after a short delay
+          setTimeout(() => {
+            if (newSocket) {
+              newSocket.disconnect();
+            }
+            navigate('/');
+          }, 2000);
         });
 
         connectSocket();
@@ -332,6 +366,28 @@ function Game() {
     setSelectedStates([]);
   };
 
+  const handleEndGame = () => {
+    // Close confirmation modal
+    setShowEndGameConfirm(false);
+
+    // Emit end game event to notify all players
+    if (socket && game) {
+      socket.emit('end_game', {
+        gameId: game.id,
+        playerId
+      });
+    }
+
+    // Clear game state from localStorage
+    localStorage.removeItem('currentGameId');
+
+    // Disconnect and navigate
+    if (socket) {
+      socket.disconnect();
+    }
+    navigate('/');
+  };
+
   const isHost = game?.host_player_id === playerId;
   const isMyTurn = game?.current_turn_player_id === playerId;
 
@@ -494,7 +550,7 @@ function Game() {
               <div>
                 <div className="flex gap-2 mb-1">
                   <span className="inline-block bg-gray-200 text-gray-700 text-xs font-semibold px-2 py-1 rounded">
-                    Round {game.current_round}
+                    Weeks until election: {12 - game.current_round}
                   </span>
                   {isMyTurn && (
                     <>
@@ -512,14 +568,27 @@ function Game() {
                   {isMyTurn && <span className="ml-2 text-green-600">← YOU</span>}
                 </p>
               </div>
-              <div className={`px-4 py-2 rounded-lg font-bold ${
-                currentPlayer?.party === 'Democrat'
-                  ? 'bg-blue-600 text-white'
-                  : currentPlayer?.party === 'Republican'
-                  ? 'bg-red-600 text-white'
-                  : 'bg-gray-600 text-white'
-              }`}>
-                {currentPlayer?.party || 'Independent'}
+              <div className="flex items-center gap-3">
+                <div className={`px-4 py-2 rounded-lg font-bold flex items-center gap-2 ${
+                  currentPlayer?.party === 'Democrat'
+                    ? 'bg-blue-600 text-white'
+                    : currentPlayer?.party === 'Republican'
+                    ? 'bg-red-600 text-white'
+                    : 'bg-gray-600 text-white'
+                }`}>
+                  <span>{currentPlayer?.party || 'Independent'}</span>
+                  {game?.incumbent_party === currentPlayer?.party && (
+                    <span className="text-xs bg-white bg-opacity-30 px-2 py-0.5 rounded" title="Incumbent Party">
+                      ★
+                    </span>
+                  )}
+                </div>
+                <button
+                  onClick={() => setShowEndGameConfirm(true)}
+                  className="text-sm text-gray-500 hover:text-red-600 underline transition-colors"
+                >
+                  End Game
+                </button>
               </div>
             </div>
           </div>
@@ -635,18 +704,49 @@ function Game() {
                     </ul>
                   </div>
                 )}
-                <button
-                  onClick={handleRollDice}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-colors text-lg"
-                >
-                  Roll Dice (1d6)
-                </button>
-                <button
-                  onClick={() => setShowDiceRoll(false)}
-                  className="mt-3 w-full bg-gray-300 hover:bg-gray-400 text-gray-700 font-semibold py-2 px-6 rounded-lg transition-colors"
-                >
-                  Cancel
-                </button>
+                <div>
+                  <button
+                    onClick={handleRollDice}
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-colors text-lg"
+                  >
+                    Roll Dice (1d6)
+                  </button>
+                  <button
+                    onClick={() => setShowDiceRoll(false)}
+                    className="mt-3 w-full bg-gray-300 hover:bg-gray-400 text-gray-700 font-semibold py-2 px-6 rounded-lg transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* End Game Confirmation Modal */}
+        {showEndGameConfirm && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4">
+              <div className="text-center">
+                <div className="text-6xl mb-4">⚠️</div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">End Game?</h2>
+                <p className="text-gray-600 mb-6">
+                  Are you sure you want to end the game and return to the home screen? This will disconnect you from the game.
+                </p>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setShowEndGameConfirm(false)}
+                    className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700 font-semibold py-3 px-6 rounded-lg transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleEndGame}
+                    className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+                  >
+                    End Game
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -681,6 +781,30 @@ function Game() {
             gameStates={states}
             onStateClick={selectedCard ? handleStateClick : undefined}
             selectedStates={selectedStates}
+            playerParty={currentPlayer?.party || null}
+            cardEffect={(() => {
+              if (!selectedCard) return null;
+
+              // Determine if card effect helps or hurts the player
+              const effect = selectedCard.primary_effect;
+              const playerParty = currentPlayer?.party;
+
+              // Check if effect increases lean (positive numbers) or decreases lean (negative numbers)
+              const leanMatch = effect.match(/([+-]?\d+)\s*lean/i);
+              if (!leanMatch) return null;
+
+              const leanChange = parseInt(leanMatch[1]);
+
+              // For Democrats: positive lean change is good, negative is bad
+              // For Republicans: negative lean change is good, positive is bad
+              if (playerParty === 'Democrat') {
+                return leanChange > 0 ? 'positive' : 'negative';
+              } else if (playerParty === 'Republican') {
+                return leanChange < 0 ? 'positive' : 'negative';
+              }
+
+              return null;
+            })()}
           />
         </div>
 

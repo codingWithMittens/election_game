@@ -5,6 +5,7 @@ export interface Game {
   status: 'lobby' | 'in_progress' | 'completed';
   current_round: number;
   current_turn_player_id: string | null;
+  incumbent_party: 'Democrat' | 'Republican' | null;
   settings: {
     maxPlayers: number;
     startingHandSize: number;

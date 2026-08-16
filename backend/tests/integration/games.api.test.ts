@@ -25,15 +25,32 @@ describe('Games API Routes', () => {
       const mockPlayerId = '223e4567-e89b-12d3-a456-426614174000';
       const mockGameCode = 'ABC123';
 
+      // Mock game code check (no existing game with this code)
+      query.mockResolvedValueOnce({
+        rows: [],
+      });
+
       // Mock game creation
       query.mockResolvedValueOnce({
-        rows: [{ id: mockGameId, game_code: mockGameCode }],
+        rows: [{ id: mockGameId, game_code: mockGameCode, incumbent_party: 'Democrat' }],
       });
 
       // Mock player creation
       query.mockResolvedValueOnce({
         rows: [{ id: mockPlayerId }],
       });
+
+      // Mock set host player
+      query.mockResolvedValueOnce({
+        rows: [],
+      });
+
+      // Mock initial game states creation (51 states)
+      for (let i = 0; i < 51; i++) {
+        query.mockResolvedValueOnce({
+          rows: [],
+        });
+      }
 
       const response = await request(app)
         .post('/api/games/create')
@@ -78,6 +95,7 @@ describe('Games API Routes', () => {
           id: mockGameId,
           game_code: mockGameCode,
           status: 'lobby',
+          settings: { maxPlayers: 4 },
         }],
       });
 
@@ -125,6 +143,7 @@ describe('Games API Routes', () => {
           id: mockGameId,
           game_code: 'ABC123',
           status: 'in_progress',
+          settings: { maxPlayers: 4 },
         }],
       });
 
@@ -136,7 +155,7 @@ describe('Games API Routes', () => {
         })
         .expect(400);
 
-      expect(response.body.error).toContain('in progress');
+      expect(response.body.error).toContain('started');
     });
 
     it('should return 400 if game is full', async () => {
@@ -173,6 +192,7 @@ describe('Games API Routes', () => {
     it('should return game data for valid game ID', async () => {
       const mockGameId = '123e4567-e89b-12d3-a456-426614174000';
 
+      // Mock game lookup
       query.mockResolvedValueOnce({
         rows: [{
           id: mockGameId,
@@ -182,12 +202,25 @@ describe('Games API Routes', () => {
         }],
       });
 
+      // Mock players lookup
+      query.mockResolvedValueOnce({
+        rows: [],
+      });
+
+      // Mock game states lookup
+      query.mockResolvedValueOnce({
+        rows: [],
+      });
+
       const response = await request(app)
         .get(`/api/games/${mockGameId}`)
         .expect(200);
 
-      expect(response.body).toHaveProperty('id', mockGameId);
-      expect(response.body).toHaveProperty('game_code', 'ABC123');
+      expect(response.body).toHaveProperty('game');
+      expect(response.body.game).toHaveProperty('id', mockGameId);
+      expect(response.body.game).toHaveProperty('game_code', 'ABC123');
+      expect(response.body).toHaveProperty('players');
+      expect(response.body).toHaveProperty('states');
     });
 
     it('should return 404 for non-existent game', async () => {

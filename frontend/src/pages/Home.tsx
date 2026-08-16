@@ -1,7 +1,19 @@
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 function Home() {
   const navigate = useNavigate();
+
+  // Check if user has an active game and redirect them
+  useEffect(() => {
+    const currentGameId = localStorage.getItem('currentGameId');
+    const playerId = localStorage.getItem('playerId');
+
+    if (currentGameId && playerId) {
+      // Redirect back to the game
+      navigate(`/game/${currentGameId}`);
+    }
+  }, [navigate]);
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">

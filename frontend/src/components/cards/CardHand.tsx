@@ -73,18 +73,75 @@ function CardHand({
     );
   }
 
+  // Get card type styling
+  const getCardTypeStyles = (type: string) => {
+    switch (type) {
+      case 'Policy':
+        return {
+          bg: 'bg-gradient-to-br from-blue-50 to-blue-100',
+          border: 'border-blue-400',
+          hoverBorder: 'hover:border-blue-500',
+          typeBadge: 'bg-blue-600 text-white',
+          accent: 'text-blue-600',
+          headerGradient: 'from-blue-500 to-blue-600'
+        };
+      case 'Campaign':
+        return {
+          bg: 'bg-gradient-to-br from-green-50 to-green-100',
+          border: 'border-green-400',
+          hoverBorder: 'hover:border-green-500',
+          typeBadge: 'bg-green-600 text-white',
+          accent: 'text-green-600',
+          headerGradient: 'from-green-500 to-green-600'
+        };
+      case 'Event':
+        return {
+          bg: 'bg-gradient-to-br from-purple-50 to-purple-100',
+          border: 'border-purple-400',
+          hoverBorder: 'hover:border-purple-500',
+          typeBadge: 'bg-purple-600 text-white',
+          accent: 'text-purple-600',
+          headerGradient: 'from-purple-500 to-purple-600'
+        };
+      case 'Special':
+        return {
+          bg: 'bg-gradient-to-br from-amber-50 to-amber-100',
+          border: 'border-amber-400',
+          hoverBorder: 'hover:border-amber-500',
+          typeBadge: 'bg-amber-600 text-white',
+          accent: 'text-amber-600',
+          headerGradient: 'from-amber-500 to-amber-600'
+        };
+      default:
+        return {
+          bg: 'bg-white',
+          border: 'border-gray-300',
+          hoverBorder: 'hover:border-gray-400',
+          typeBadge: 'bg-gray-600 text-white',
+          accent: 'text-gray-600',
+          headerGradient: 'from-gray-500 to-gray-600'
+        };
+    }
+  };
+
   // Render a single card
-  const renderCard = (card: Card, index: number, isSelectedView: boolean = false) => (
+  const renderCard = (card: Card, index: number, isSelectedView: boolean = false) => {
+    const typeStyles = getCardTypeStyles(card.type);
+
+    return (
     <button
       key={`${card.id}-${index}`}
       onClick={() => !isSelectedView && onCardClick?.(card)}
-      className={`flex-shrink-0 w-56 h-[20rem] bg-white rounded-lg shadow-lg transition-all duration-200 border-2 self-start ${
+      className={`flex-shrink-0 w-56 h-[20rem] rounded-lg shadow-lg transition-all duration-200 border-2 self-start ${typeStyles.bg} ${
         selectedCard?.id === card.id && !isSelectedView
           ? 'border-yellow-400 ring-2 ring-yellow-400 transform -translate-y-1 shadow-2xl'
-          : 'border-gray-300 hover:border-gray-400 hover:-translate-y-1'
+          : `${typeStyles.border} ${typeStyles.hoverBorder} hover:-translate-y-1`
       } ${onCardClick && !isSelectedView ? 'cursor-pointer' : 'cursor-default'}`}
       disabled={!onCardClick || isSelectedView}
     >
+      {/* Decorative header bar */}
+      <div className={`h-2 rounded-t-lg bg-gradient-to-r ${typeStyles.headerGradient}`}></div>
+
       <div className="p-3 flex flex-col h-full">
         {/* Card Header - Top section */}
         <div className="mb-2">
@@ -93,17 +150,17 @@ function CardHand({
               {card.name}
             </h3>
             <div className="flex-shrink-0 ml-2">
-              <span className="inline-block bg-blue-600 text-white text-xs font-bold px-2 py-0.5 rounded">
+              <span className="inline-block bg-indigo-600 text-white text-xs font-bold px-2 py-0.5 rounded">
                 {card.cost} MP
               </span>
             </div>
           </div>
           <div className="flex gap-1.5 justify-center">
-            <span className="inline-block bg-gray-200 text-gray-700 text-xs px-1.5 py-0.5 rounded">
+            <span className={`inline-block ${typeStyles.typeBadge} text-xs font-semibold px-1.5 py-0.5 rounded`}>
               {card.type}
             </span>
             {card.subtype && (
-              <span className="inline-block bg-gray-200 text-gray-700 text-xs px-1.5 py-0.5 rounded">
+              <span className="inline-block bg-gray-300 text-gray-700 text-xs px-1.5 py-0.5 rounded">
                 {card.subtype}
               </span>
             )}
@@ -112,7 +169,7 @@ function CardHand({
 
         {/* Card Effect */}
         <div className="mb-1.5 text-left">
-          <p className="text-xs font-semibold text-blue-600 mb-0.5">Effect:</p>
+          <p className={`text-xs font-semibold ${typeStyles.accent} mb-0.5`}>Effect:</p>
           <p className="text-xs text-gray-700 leading-snug">• {card.primary_effect}</p>
         </div>
 
@@ -175,7 +232,8 @@ function CardHand({
         )}
       </div>
     </button>
-  );
+    );
+  };
 
   // If a card is selected, show only that card with buttons
   if (selectedCard) {
