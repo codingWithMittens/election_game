@@ -27,6 +27,7 @@ interface GameData {
   host_player_id: string;
   current_turn_player_id: string | null;
   current_round: number;
+  incumbent_party: 'Democrat' | 'Republican' | null;
   cards_played_this_turn?: number;
 }
 

@@ -22,7 +22,7 @@ interface StateMapProps {
 type SortOption = 'alphabetical' | 'lean' | 'electoral_votes' | 'swing_states' | 'region';
 type ViewMode = 'grid' | 'map';
 
-function StateMap({ gameStates, onStateClick, selectedStates = [], playerParty = null, cardEffect = null }: StateMapProps) {
+function StateMap({ gameStates, onStateClick, selectedStates = [], playerParty: _playerParty = null, cardEffect = null }: StateMapProps) {
   const [sortBy, setSortBy] = useState<SortOption>('alphabetical');
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const getStateColor = (lean: number): string => {
