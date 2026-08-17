@@ -5,6 +5,7 @@ import { getGame } from '../lib/api';
 import StateMap from '../components/game/StateMap';
 import CardHand from '../components/cards/CardHand';
 import ElectoralVoteBar from '../components/game/ElectoralVoteBar';
+import RulesModal from '../components/rules/RulesModal';
 import { Card } from '../types';
 import type { Socket } from 'socket.io-client';
 import statesDataJson from '../data/Electoral_Strategy_States.json';
@@ -55,6 +56,7 @@ function Game() {
   const [selectedStates, setSelectedStates] = useState<string[]>([]);
   const [diceRoll, setDiceRoll] = useState<number | null>(null);
   const [showDiceRoll, setShowDiceRoll] = useState(false);
+  const [showRulesModal, setShowRulesModal] = useState(false);
 
   // Card result notification
   const [cardResult, setCardResult] = useState<{
@@ -613,6 +615,13 @@ function Game() {
                   )}
                 </div>
                 <button
+                  onClick={() => setShowRulesModal(true)}
+                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors shadow-md flex items-center gap-2"
+                >
+                  <span>📖</span>
+                  <span>How to Play</span>
+                </button>
+                <button
                   onClick={() => setShowEndGameConfirm(true)}
                   className="text-sm text-gray-500 hover:text-red-600 underline transition-colors"
                 >
@@ -893,6 +902,9 @@ function Game() {
           </div>
         </div>
       </div>
+
+      {/* Rules Modal */}
+      <RulesModal isOpen={showRulesModal} onClose={() => setShowRulesModal(false)} />
     </div>
   );
 }

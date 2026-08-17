@@ -1,0 +1,392 @@
+{
+  "overview": {
+    "title": "Electoral Strategy - Digital Edition",
+    "description": "Campaign for the presidency by playing cards to shift state lean and win 270 electoral votes",
+    "players": "2-4",
+    "playTime": "30-60 minutes",
+    "tooltip": "Win by controlling states worth 270+ electoral votes through strategic card play"
+  },
+  "victory": {
+    "title": "How to Win",
+    "condition": "270 Electoral Votes",
+    "description": "Be the first player to control states worth 270 or more electoral votes",
+    "stateControl": {
+      "threshold": 7,
+      "description": "A state is controlled when its lean reaches ±7 or more",
+      "yourControl": "Lean ≥ +7 (for Democrats) or Lean ≤ -7 (for Republicans)",
+      "contested": "Lean between -6 and +6 means the state is contested (no electoral votes awarded)"
+    },
+    "tooltip": "Control states by shifting their lean to ±7 or more in your direction"
+  },
+  "setup": {
+    "title": "Game Setup",
+    "steps": [
+      {
+        "step": 1,
+        "title": "Create or Join Game",
+        "description": "Host creates a game and receives a 6-character code. Other players join using this code.",
+        "tooltip": "Share your game code with other players to let them join"
+      },
+      {
+        "step": 2,
+        "title": "Party Assignment",
+        "description": "When the game starts, players are automatically assigned to Democrat or Republican parties, alternating by turn order.",
+        "tooltip": "First player becomes Democrat, second becomes Republican, and so on"
+      },
+      {
+        "step": 3,
+        "title": "Initial Deal",
+        "description": "Each player starts with 5 cards drawn randomly from the deck",
+        "tooltip": "Your starting hand consists of Policy, Campaign, Event, and Special cards"
+      },
+      {
+        "step": 4,
+        "title": "Starting State Lean",
+        "description": "All states begin with their historical lean values based on real electoral data",
+        "tooltip": "Blue states start with positive lean, red states with negative lean, swing states near 0"
+      }
+    ]
+  },
+  "turnStructure": {
+    "title": "Your Turn",
+    "description": "Each turn you can play or discard up to 3 cards",
+    "phases": [
+      {
+        "phase": "Start of Turn",
+        "description": "The game advances to your turn automatically when the previous player ends their turn",
+        "tooltip": "Wait for your turn indicator to show it's your turn to play"
+      },
+      {
+        "phase": "Actions (Up to 3)",
+        "description": "You may play or discard up to 3 cards from your hand",
+        "actions": [
+          {
+            "action": "Play a Card",
+            "description": "Select a card from your hand, choose target states if required, then click 'Play'",
+            "tooltip": "Some cards auto-target states, others require you to select target states on the map"
+          },
+          {
+            "action": "Discard a Card",
+            "description": "Select a card from your hand and click 'Discard' to remove it without playing",
+            "tooltip": "Discarding counts as one of your 3 actions per turn"
+          }
+        ]
+      },
+      {
+        "phase": "End Turn",
+        "description": "When finished, click the 'End Turn' button to pass to the next player",
+        "specialCases": [
+          {
+            "case": "Skip Turn (0 cards played)",
+            "effect": "All cards in your hand are discarded and you get a fresh hand next turn",
+            "button": "Skip Turn and Redeal All Cards"
+          },
+          {
+            "case": "Early End (1-2 cards played)",
+            "effect": "You forfeit your remaining actions",
+            "button": "Skip remaining X actions and end turn"
+          },
+          {
+            "case": "All Actions Used (3 cards played)",
+            "effect": "Turn automatically ends after 1.5 seconds",
+            "button": "Turn ends automatically"
+          }
+        ],
+        "tooltip": "After ending your turn, the next player can deal new cards to refill their hand"
+      },
+      {
+        "phase": "Deal Cards",
+        "description": "At the start of your turn, click 'Deal Cards' to draw cards until you have 5",
+        "tooltip": "You must manually deal cards - they won't auto-deal. Newly dealt cards appear on the right side of your hand."
+      }
+    ]
+  },
+  "cardTypes": {
+    "title": "Card Types",
+    "types": [
+      {
+        "type": "Policy",
+        "color": "blue",
+        "description": "Your campaign platform positions on key issues",
+        "effect": "Shift state lean based on the card's primary effect",
+        "targeting": "Most Policy cards target specific states or require you to choose states",
+        "examples": ["Healthcare Reform", "Climate Action", "Tax Policy"],
+        "tooltip": "Policy cards usually have both a primary effect and potential backlash"
+      },
+      {
+        "type": "Campaign",
+        "color": "green",
+        "description": "Tactical campaign moves and ground game operations",
+        "effect": "Various effects including state lean shifts, card draws, or special abilities",
+        "targeting": "Varies by card - some auto-target, others require selection",
+        "examples": ["Ground Game", "TV Ad Buy", "Voter Registration"],
+        "tooltip": "Campaign cards help you execute your strategy and respond to opponents"
+      },
+      {
+        "type": "Event",
+        "color": "purple",
+        "description": "National events that affect all players",
+        "effect": "Can help or hurt all players depending on the event",
+        "targeting": "Usually affects multiple states or all states",
+        "examples": ["Economic Crisis", "Foreign Policy Success"],
+        "tooltip": "Event cards represent unpredictable national developments"
+      },
+      {
+        "type": "Special",
+        "color": "amber",
+        "description": "Powerful game-changing cards",
+        "effect": "Unique effects that can dramatically shift the game",
+        "targeting": "Varies widely by specific card",
+        "examples": ["Debate Performance", "Running Mate Selection"],
+        "tooltip": "Special cards are rare and can turn the tide of the campaign"
+      }
+    ]
+  },
+  "cardSelection": {
+    "title": "Selecting Target States",
+    "rules": [
+      {
+        "type": "AUTO",
+        "name": "Auto-Target Cards",
+        "description": "These cards automatically apply to their pre-defined target states",
+        "userAction": "No state selection needed - just click 'Play'",
+        "indicator": "Card shows target states in its description",
+        "tooltip": "Auto cards apply immediately without needing to select states"
+      },
+      {
+        "type": "CHOOSE_ONE",
+        "name": "Choose One State",
+        "description": "Select exactly one state from the map to target",
+        "userAction": "Click one state on the map, then click 'Play'",
+        "indicator": "Card will show 'Select target state(s) on the map' message",
+        "tooltip": "Click a single state to target it with this card"
+      },
+      {
+        "type": "CHOOSE_MULTIPLE",
+        "name": "Choose Multiple States",
+        "description": "Select multiple states from the map (usually up to 3)",
+        "userAction": "Click multiple states on the map, then click 'Play'",
+        "indicator": "Card will show 'Targeting: [selected states]' as you select",
+        "tooltip": "Click multiple states to target them all with this card"
+      }
+    ]
+  },
+  "stateLean": {
+    "title": "State Lean System",
+    "description": "Each state has a lean value from -15 to +15 that determines who controls it",
+    "scale": [
+      {
+        "range": "≤ -10",
+        "category": "Strong Red",
+        "color": "#991b1b",
+        "controlled": "Republican",
+        "description": "Solidly Republican state"
+      },
+      {
+        "range": "-9 to -7",
+        "category": "Lean Red",
+        "color": "#ef4444",
+        "controlled": "Republican",
+        "description": "Republican-controlled state"
+      },
+      {
+        "range": "-6 to -3",
+        "category": "Tilt Red",
+        "color": "#fca5a5",
+        "controlled": "Contested",
+        "description": "Republican-leaning but not controlled"
+      },
+      {
+        "range": "-2 to +2",
+        "category": "Toss-up",
+        "color": "#d1d5db",
+        "controlled": "Contested",
+        "description": "True swing state - anyone can win"
+      },
+      {
+        "range": "+3 to +6",
+        "category": "Tilt Blue",
+        "color": "#93c5fd",
+        "controlled": "Contested",
+        "description": "Democrat-leaning but not controlled"
+      },
+      {
+        "range": "+7 to +9",
+        "category": "Lean Blue",
+        "color": "#3b82f6",
+        "controlled": "Democrat",
+        "description": "Democrat-controlled state"
+      },
+      {
+        "range": "≥ +10",
+        "category": "Strong Blue",
+        "color": "#1e40af",
+        "controlled": "Democrat",
+        "description": "Solidly Democratic state"
+      }
+    ],
+    "controlThreshold": {
+      "value": 7,
+      "description": "States are controlled when lean reaches ±7 or more",
+      "tooltip": "Focus on getting swing states to ±7 to win their electoral votes"
+    }
+  },
+  "electoralVotes": {
+    "title": "Electoral College",
+    "total": 538,
+    "toWin": 270,
+    "description": "Each state has a fixed number of electoral votes based on population",
+    "highestValue": [
+      {"state": "CA", "votes": 54},
+      {"state": "TX", "votes": 40},
+      {"state": "FL", "votes": 30},
+      {"state": "NY", "votes": 28},
+      {"state": "PA", "votes": 19}
+    ],
+    "swingStates": [
+      {"state": "PA", "votes": 19, "startingLean": 0},
+      {"state": "MI", "votes": 15, "startingLean": 0},
+      {"state": "WI", "votes": 10, "startingLean": 0},
+      {"state": "AZ", "votes": 11, "startingLean": 0},
+      {"state": "GA", "votes": 16, "startingLean": 0},
+      {"state": "NC", "votes": 16, "startingLean": 0},
+      {"state": "NV", "votes": 6, "startingLean": 0}
+    ],
+    "tooltip": "You need 270 of the 538 total electoral votes to win the presidency"
+  },
+  "gameFlow": {
+    "title": "Game Flow",
+    "rounds": {
+      "description": "The game continues in rounds, with each player taking turns in order",
+      "roundCounter": "Track which round you're in via the round indicator",
+      "tooltip": "Each complete cycle of all players taking turns is one round"
+    },
+    "turnOrder": {
+      "description": "Players take turns in the order they joined the game",
+      "rotation": "Turn order is fixed and rotates clockwise",
+      "tooltip": "First player goes first every round, then second player, etc."
+    }
+  },
+  "strategy": {
+    "title": "Strategy Tips",
+    "tips": [
+      {
+        "category": "Early Game",
+        "tip": "Focus on swing states",
+        "description": "Swing states (PA, MI, WI, AZ, GA, NC, NV) are easier to flip and crucial for victory",
+        "tooltip": "It's easier to move a swing state from 0 to +7 than a red state from -10 to +7"
+      },
+      {
+        "category": "Path to 270",
+        "tip": "Count your electoral votes",
+        "description": "Always know which states you need to reach exactly 270 votes",
+        "tooltip": "Don't waste actions on states you don't need for victory"
+      },
+      {
+        "category": "Hand Management",
+        "tip": "Know when to skip",
+        "description": "If your hand is bad, skip your turn to discard all cards and get 5 fresh ones",
+        "tooltip": "Skipping with 0 actions played gives you a complete new hand next turn"
+      },
+      {
+        "category": "Action Economy",
+        "tip": "Use all 3 actions",
+        "description": "Try to use all 3 actions per turn - don't leave value on the table",
+        "tooltip": "Even discarding a card is better than wasting an action"
+      },
+      {
+        "category": "State Defense",
+        "tip": "Protect controlled states",
+        "description": "Once you control a state (±7), defend it from opponent's cards",
+        "tooltip": "Losing a controlled state means losing its electoral votes"
+      }
+    ]
+  },
+  "uiElements": {
+    "title": "User Interface Guide",
+    "elements": [
+      {
+        "element": "Electoral Vote Bar",
+        "location": "Top of game screen",
+        "description": "Shows the distribution of electoral votes by state lean category",
+        "colors": {
+          "strongBlue": "Deep blue = Strong Democrat states (≥+10)",
+          "leanBlue": "Medium blue = Lean Democrat states (+7 to +9)",
+          "tiltBlue": "Light blue = Tilt Democrat states (+3 to +6)",
+          "tossup": "Gray = Toss-up states (-2 to +2)",
+          "tiltRed": "Light red = Tilt Republican states (-6 to -3)",
+          "leanRed": "Medium red = Lean Republican states (-9 to -7)",
+          "strongRed": "Deep red = Strong Republican states (≤-10)"
+        },
+        "marker": "Yellow line shows the 270 electoral vote threshold",
+        "tooltip": "Quickly see how close you are to 270 electoral votes"
+      },
+      {
+        "element": "State Map",
+        "location": "Center of game screen",
+        "views": ["Grid View", "Map View"],
+        "description": "Interactive map showing all 50 states + DC with current lean values",
+        "interaction": "Click states to select them when playing cards that require targets",
+        "sorting": "Grid view can be sorted by: Alphabetical, Lean, Electoral Votes, Swing States, or Region",
+        "tooltip": "States are colored by their current lean category"
+      },
+      {
+        "element": "Card Hand",
+        "location": "Bottom of game screen",
+        "description": "Your current hand of cards (0-5 cards)",
+        "interaction": "Click a card to select it, then choose Play or Discard",
+        "expansion": "Click 'Collapse' to minimize, '▼' to expand",
+        "dealButton": "Click 'Deal Cards' when you have < 5 cards to draw more",
+        "tooltip": "Cards are ordered left-to-right by when they were drawn"
+      },
+      {
+        "element": "Turn Indicator",
+        "location": "Top center of screen",
+        "states": {
+          "yourTurn": "Green background with 'Select a card to play or [End Turn button]'",
+          "opponentTurn": "Blue background showing which opponent is playing"
+        },
+        "tooltip": "Shows whose turn it is and how many actions remain"
+      },
+      {
+        "element": "Actions Remaining",
+        "location": "Turn indicator area",
+        "description": "Shows how many of your 3 actions you have left this turn",
+        "tooltip": "Resets to 3 at the start of each of your turns"
+      },
+      {
+        "element": "Current Polls",
+        "location": "Above electoral vote bar",
+        "description": "Shows the 270 electoral vote threshold needed to win",
+        "tooltip": "This represents the target you need to reach"
+      }
+    ]
+  },
+  "quickReference": {
+    "title": "Quick Reference",
+    "keyFacts": [
+      "Need 270 electoral votes to win",
+      "Control states at ±7 lean or more",
+      "3 actions per turn (play or discard cards)",
+      "Deal cards manually to refill hand to 5",
+      "Skip turn with 0 actions to get new hand",
+      "Turn auto-ends after 3rd action",
+      "Cards ordered by when drawn (old left, new right)"
+    ]
+  },
+  "tooltips": {
+    "cardCost": "Media Points (MP) required to play this card",
+    "cardEffect": "What happens when you play this card",
+    "backlash": "Negative effect that also occurs when playing this card",
+    "special": "Special conditions or bonus effects",
+    "diceMechanic": "This card involves a dice roll for variable outcomes",
+    "targetStates": "Which states this card affects",
+    "electoralVotes": "Number of votes this state is worth",
+    "stateLean": "Current lean value - positive favors Democrats, negative favors Republicans",
+    "leanCategory": "How strongly this state leans toward one party",
+    "selectedCard": "Currently selected card - click Play, Discard, or Cancel",
+    "dealCards": "Draw cards from the deck until you have 5 in hand",
+    "skipTurn": "Discard all cards and end turn - you'll get 5 fresh cards next turn",
+    "endTurn": "End your turn and pass to the next player"
+  }
+}
