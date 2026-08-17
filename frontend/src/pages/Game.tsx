@@ -941,7 +941,7 @@ function Game() {
           <div className="p-4" style={{ pointerEvents: 'auto' }}>
             <CardHand
               cards={hand}
-              onCardClick={isMyTurn ? handleCardClick : undefined}
+              onCardClick={isMyTurn && hand.length > 0 ? handleCardClick : undefined}
               selectedCard={selectedCard}
               party={currentPlayer?.party || null}
               selectedStates={selectedStates}
