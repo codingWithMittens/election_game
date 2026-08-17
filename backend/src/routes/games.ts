@@ -78,7 +78,15 @@ router.post('/create', async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error('Error creating game:', error);
-    res.status(500).json({ error: 'Failed to create game' });
+    console.error('Error details:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      playerName: req.body?.playerName
+    });
+    res.status(500).json({
+      error: 'Failed to create game',
+      details: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.message : 'Unknown error') : undefined
+    });
   }
 });
 

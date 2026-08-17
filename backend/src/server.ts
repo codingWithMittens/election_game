@@ -50,6 +50,37 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// Database debug endpoint
+app.get('/api/debug/db', async (req, res) => {
+  try {
+    const result = await query('SELECT NOW() as current_time, current_database() as db_name');
+    const tablesResult = await query(`
+      SELECT table_name
+      FROM information_schema.tables
+      WHERE table_schema = 'public'
+      ORDER BY table_name
+    `);
+    res.json({
+      status: 'connected',
+      database: result.rows[0],
+      tables: tablesResult.rows.map(r => r.table_name),
+      env: {
+        hasDbUrl: !!process.env.DATABASE_URL,
+        nodeEnv: process.env.NODE_ENV
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'error',
+      error: error instanceof Error ? error.message : 'Unknown error',
+      env: {
+        hasDbUrl: !!process.env.DATABASE_URL,
+        nodeEnv: process.env.NODE_ENV
+      }
+    });
+  }
+});
+
 // Initialize Socket.io handlers
 initializeSocketHandlers(io);
 
