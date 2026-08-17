@@ -148,73 +148,164 @@ function StateMap({ gameStates, onStateClick, selectedStates = [], playerParty: 
 
       {/* Conditional view rendering */}
       {viewMode === 'grid' ? (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-          {sortedStates.map((state: State & { currentLean: number }) => {
-            const lean = state.currentLean;
-            const color = getStateColor(lean);
-            const isSelected = selectedStates.includes(state.abbreviation);
-            const selectable = isStateSelectable ? isStateSelectable(state.abbreviation) : true;
+        <div className="space-y-4">
+          {sortBy === 'region' ? (
+            // Group by region when sorted by region
+            (() => {
+              const regions = Array.from(new Set(sortedStates.map(s => s.region)));
+              return regions.map(region => (
+                <div key={region}>
+                  <h3 className="text-lg font-bold text-gray-700 mb-2 pb-1 border-b-2 border-gray-300">
+                    {region}
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+                    {sortedStates
+                      .filter(state => state.region === region)
+                      .map((state: State & { currentLean: number }) => {
+                        const lean = state.currentLean;
+                        const color = getStateColor(lean);
+                        const isSelected = selectedStates.includes(state.abbreviation);
+                        const selectable = isStateSelectable ? isStateSelectable(state.abbreviation) : true;
 
-            // Determine selection visual treatment based on card effect
-            let selectionClass = '';
-            let selectionBorder = '';
-            let selectionBadge = null;
+                        // Determine selection visual treatment based on card effect
+                        let selectionClass = '';
+                        let selectionBorder = '';
+                        let selectionBadge = null;
 
-            if (isSelected && cardEffect) {
-              if (cardEffect === 'positive') {
-                selectionClass = 'ring-8 ring-green-400 shadow-2xl transform scale-110 animate-pulse';
-                selectionBorder = 'border-4 border-green-300';
-                selectionBadge = (
-                  <div className="absolute -top-2 -right-2 bg-green-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-lg font-bold shadow-lg">
-                    ✓
-                  </div>
-                );
-              } else if (cardEffect === 'negative') {
-                selectionClass = 'ring-8 ring-red-400 shadow-2xl transform scale-110 animate-pulse';
-                selectionBorder = 'border-4 border-red-300';
-                selectionBadge = (
-                  <div className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-lg font-bold shadow-lg">
-                    ⚠
-                  </div>
-                );
-              }
-            } else if (isSelected) {
-              selectionClass = 'ring-6 ring-yellow-400 shadow-xl transform scale-105';
-            }
+                        if (isSelected && cardEffect) {
+                          if (cardEffect === 'positive') {
+                            selectionClass = 'ring-8 ring-green-400 shadow-2xl transform scale-110 animate-pulse';
+                            selectionBorder = 'border-4 border-green-300';
+                            selectionBadge = (
+                              <div className="absolute -top-2 -right-2 bg-green-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-lg font-bold shadow-lg">
+                                ✓
+                              </div>
+                            );
+                          } else if (cardEffect === 'negative') {
+                            selectionClass = 'ring-8 ring-red-400 shadow-2xl transform scale-110 animate-pulse';
+                            selectionBorder = 'border-4 border-red-300';
+                            selectionBadge = (
+                              <div className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-lg font-bold shadow-lg">
+                                ⚠
+                              </div>
+                            );
+                          }
+                        } else if (isSelected) {
+                          selectionClass = 'ring-6 ring-yellow-400 shadow-xl transform scale-105';
+                        }
 
-            return (
-              <button
-                key={state.abbreviation}
-                onClick={() => onStateClick?.(state.abbreviation)}
-                className={`relative p-3 rounded-lg transition-all duration-200 ${selectionBorder} ${
-                  isSelected ? selectionClass : 'hover:shadow-lg'
-                } ${onStateClick && selectable ? 'cursor-pointer' : 'cursor-not-allowed'} ${
-                  !selectable && onStateClick ? 'opacity-40' : ''
-                }`}
-                style={{ backgroundColor: color }}
-                disabled={!onStateClick || !selectable}
-              >
-                {selectionBadge}
-                <div className="text-white text-center">
-                  <div className="text-lg font-bold mb-1">{state.abbreviation}</div>
-                  <div className="text-xs opacity-90">{state.electoral_votes} EV</div>
-                  <div className="text-xs opacity-75 mt-1">
-                    Lean: {lean > 0 ? '+' : ''}{lean}
+                        return (
+                          <button
+                            key={state.abbreviation}
+                            onClick={() => onStateClick?.(state.abbreviation)}
+                            className={`relative p-4 rounded-lg transition-all duration-200 ${selectionBorder} ${
+                              isSelected ? selectionClass : 'hover:shadow-lg'
+                            } ${onStateClick && selectable ? 'cursor-pointer' : 'cursor-not-allowed'} ${
+                              !selectable && onStateClick ? 'opacity-40' : ''
+                            }`}
+                            style={{ backgroundColor: color }}
+                            disabled={!onStateClick || !selectable}
+                          >
+                            {selectionBadge}
+                            <div className="text-white text-center">
+                              <div className="text-2xl font-extrabold mb-2">{state.abbreviation}</div>
+                              <div className="flex items-center justify-center gap-2 mb-1">
+                                <div className="text-xl font-bold bg-white bg-opacity-20 px-2 py-1 rounded">
+                                  {state.electoral_votes}
+                                </div>
+                                <div className="text-xs font-semibold">EV</div>
+                              </div>
+                              <div className="text-lg font-bold">
+                                {lean > 0 ? '+' : ''}{lean}
+                              </div>
+                              {isSelected && cardEffect && (
+                                <div className={`text-xs font-bold mt-2 px-2 py-1 rounded ${
+                                  cardEffect === 'positive' ? 'bg-green-500' : 'bg-red-500'
+                                }`}>
+                                  {cardEffect === 'positive' ? 'HELPS YOU' : 'HURTS YOU'}
+                                </div>
+                              )}
+                            </div>
+                          </button>
+                        );
+                      })}
                   </div>
-                  <div className="text-xs font-semibold mt-1 opacity-90">
-                    {getLeanCategory(lean)}
-                  </div>
-                  {isSelected && cardEffect && (
-                    <div className={`text-xs font-bold mt-2 px-2 py-1 rounded ${
-                      cardEffect === 'positive' ? 'bg-green-500' : 'bg-red-500'
-                    }`}>
-                      {cardEffect === 'positive' ? 'HELPS YOU' : 'HURTS YOU'}
-                    </div>
-                  )}
                 </div>
-              </button>
-            );
-          })}
+              ));
+            })()
+          ) : (
+            // Regular grid without region grouping
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+              {sortedStates.map((state: State & { currentLean: number }) => {
+                const lean = state.currentLean;
+                const color = getStateColor(lean);
+                const isSelected = selectedStates.includes(state.abbreviation);
+                const selectable = isStateSelectable ? isStateSelectable(state.abbreviation) : true;
+
+                // Determine selection visual treatment based on card effect
+                let selectionClass = '';
+                let selectionBorder = '';
+                let selectionBadge = null;
+
+                if (isSelected && cardEffect) {
+                  if (cardEffect === 'positive') {
+                    selectionClass = 'ring-8 ring-green-400 shadow-2xl transform scale-110 animate-pulse';
+                    selectionBorder = 'border-4 border-green-300';
+                    selectionBadge = (
+                      <div className="absolute -top-2 -right-2 bg-green-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-lg font-bold shadow-lg">
+                        ✓
+                      </div>
+                    );
+                  } else if (cardEffect === 'negative') {
+                    selectionClass = 'ring-8 ring-red-400 shadow-2xl transform scale-110 animate-pulse';
+                    selectionBorder = 'border-4 border-red-300';
+                    selectionBadge = (
+                      <div className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-lg font-bold shadow-lg">
+                        ⚠
+                      </div>
+                    );
+                  }
+                } else if (isSelected) {
+                  selectionClass = 'ring-6 ring-yellow-400 shadow-xl transform scale-105';
+                }
+
+                return (
+                  <button
+                    key={state.abbreviation}
+                    onClick={() => onStateClick?.(state.abbreviation)}
+                    className={`relative p-4 rounded-lg transition-all duration-200 ${selectionBorder} ${
+                      isSelected ? selectionClass : 'hover:shadow-lg'
+                    } ${onStateClick && selectable ? 'cursor-pointer' : 'cursor-not-allowed'} ${
+                      !selectable && onStateClick ? 'opacity-40' : ''
+                    }`}
+                    style={{ backgroundColor: color }}
+                    disabled={!onStateClick || !selectable}
+                  >
+                    {selectionBadge}
+                    <div className="text-white text-center">
+                      <div className="text-2xl font-extrabold mb-2">{state.abbreviation}</div>
+                      <div className="flex items-center justify-center gap-2 mb-1">
+                        <div className="text-xl font-bold bg-white bg-opacity-20 px-2 py-1 rounded">
+                          {state.electoral_votes}
+                        </div>
+                        <div className="text-xs font-semibold">EV</div>
+                      </div>
+                      <div className="text-lg font-bold">
+                        {lean > 0 ? '+' : ''}{lean}
+                      </div>
+                      {isSelected && cardEffect && (
+                        <div className={`text-xs font-bold mt-2 px-2 py-1 rounded ${
+                          cardEffect === 'positive' ? 'bg-green-500' : 'bg-red-500'
+                        }`}>
+                          {cardEffect === 'positive' ? 'HELPS YOU' : 'HURTS YOU'}
+                        </div>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
       ) : (
         <USAMap
