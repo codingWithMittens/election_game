@@ -1,11 +1,13 @@
 import { Server, Socket } from 'socket.io';
 import { query } from '../db/connection';
 import cardsDataJson from '../data/Electoral_Strategy_Cards.json';
-import { Card } from '../types';
+import statesDataJson from '../data/Electoral_Strategy_States.json';
+import { Card, State } from '../types';
 import { calculateElectoralVotes } from '../lib/gameLogic';
 import { validateStateSelection, getCardSelectionRules } from '../lib/cardRules';
 
 const cardsData = (cardsDataJson as any).cards as Card[];
+const statesData = (statesDataJson as any).states as State[];
 
 interface JoinRoomData {
   gameId: string;
@@ -1035,7 +1037,7 @@ export function initializeSocketHandlers(io: Server) {
                 [gameId]
               );
 
-              const statesDataMap = new Map(statesData.map((s: any) => [s.abbreviation, s]));
+              const statesDataMap = new Map<string, State>(statesData.map((s) => [s.abbreviation, s]));
               const playerVotes: { [playerId: string]: number } = {};
 
               for (const stateRow of updatedStatesResult.rows) {
