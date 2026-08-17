@@ -654,6 +654,13 @@ function Game() {
                 <div className={`px-4 py-2 rounded-lg font-bold flex items-center gap-2 bg-gray-200 text-gray-700`}>
                   <span>Weeks until election: {12 - game.current_round}</span>
                 </div>
+                {isMyTurn && (
+                  <div className={`px-4 py-2 rounded-lg font-bold flex items-center gap-2 bg-green-200 text-green-700`}>
+                    <span>Actions Remaining: {3 - (game?.cards_played_this_turn || 0)}</span>
+                  </div>
+                )}
+              </div>
+              <div className="flex items-center gap-3">
                 <button
                   onClick={() => setShowRulesModal(true)}
                   className="text-sm bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium py-1.5 px-3 rounded-full transition-colors shadow-sm flex items-center gap-1.5"
@@ -661,18 +668,13 @@ function Game() {
                   <span>📖</span>
                   <span>How to Play</span>
                 </button>
-                {isMyTurn && (
-                  <div className={`px-4 py-2 rounded-lg font-bold flex items-center gap-2 bg-green-200 text-green-700`}>
-                    <span>Actions Remaining: {3 - (game?.cards_played_this_turn || 0)}</span>
-                  </div>
-                )}
+                <button
+                  onClick={() => setShowEndGameConfirm(true)}
+                  className="text-sm bg-gray-200 hover:bg-red-100 text-gray-700 hover:text-red-600 font-medium py-1.5 px-3 rounded-full transition-colors shadow-sm"
+                >
+                  End Game
+                </button>
               </div>
-              <button
-                onClick={() => setShowEndGameConfirm(true)}
-                className="text-sm bg-gray-200 hover:bg-red-100 text-gray-700 hover:text-red-600 font-medium py-1.5 px-3 rounded-full transition-colors shadow-sm"
-              >
-                End Game
-              </button>
             </div>
           </div>
           <ElectoralVoteBar
