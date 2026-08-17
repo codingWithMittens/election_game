@@ -237,6 +237,16 @@ export function initializeSocketHandlers(io: Server) {
           return;
         }
 
+        // Get current round for validation
+        const currentGameState = await query('SELECT current_round FROM games WHERE id = $1', [gameId]);
+        const currentRound = currentGameState.rows[0]?.current_round || 1;
+
+        // Special validation for October Surprise - can only be played in final 2 rounds
+        if (card.id === 'SPE-WIL-001' && currentRound < 11) {
+          socket.emit('error', { message: 'October Surprise can only be played in the final 2 rounds (rounds 11-12)' });
+          return;
+        }
+
         // Validate state selection
         const selectionRules = getCardSelectionRules(card);
         const effectiveTargetStates = targetStates || [];
