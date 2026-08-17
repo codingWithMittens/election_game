@@ -635,8 +635,23 @@ function Game() {
         {/* Header with Electoral Vote Bar */}
         <div className="bg-white rounded-2xl shadow-xl p-6 mb-6">
           <div className="mb-4">
-            <div className="flex justify-between items-center mb-2">
-              <div className="flex items-center gap-3">
+            <div className="flex justify-between items-start mb-2">
+              <div className="flex items-start gap-3">
+                <div className="flex flex-col gap-2">
+                  <button
+                    onClick={() => setShowRulesModal(true)}
+                    className="text-sm bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium py-1.5 px-3 rounded-full transition-colors shadow-sm flex items-center gap-1.5"
+                  >
+                    <span>📖</span>
+                    <span>How to Play</span>
+                  </button>
+                  <button
+                    onClick={() => setShowEndGameConfirm(true)}
+                    className="text-sm bg-gray-200 hover:bg-red-100 text-gray-700 hover:text-red-600 font-medium py-1.5 px-3 rounded-full transition-colors shadow-sm"
+                  >
+                    End Game
+                  </button>
+                </div>
                 <div className={`px-4 py-2 rounded-lg font-bold flex items-center gap-2 ${
                   currentPlayer?.party === 'Democrat'
                     ? 'bg-blue-600 text-white'
@@ -669,21 +684,6 @@ function Game() {
                     {isMyTurn && <span className="ml-2 text-green-600">← YOU</span>}
                   </p>
                 </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => setShowRulesModal(true)}
-                  className="text-sm bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium py-1.5 px-3 rounded-lg transition-colors shadow-sm flex items-center gap-1.5"
-                >
-                  <span>📖</span>
-                  <span>How to Play</span>
-                </button>
-                <button
-                  onClick={() => setShowEndGameConfirm(true)}
-                  className="text-sm text-gray-500 hover:text-red-600 underline transition-colors"
-                >
-                  End Game
-                </button>
               </div>
             </div>
           </div>
