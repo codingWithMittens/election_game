@@ -145,15 +145,16 @@ export function initializeSocketHandlers(io: Server) {
           [updatedPlayers[0].id, gameId]
         );
 
-        // Deal initial hands
-        const deck = [...cardsData];
+        // Deal initial hands (exclude event cards from main deck)
+        const deck = cardsData.filter(card => card.type !== 'Event');
+        const shuffledDeck = [...deck];
         const startingHandSize = 5;
 
         for (const player of updatedPlayers) {
           for (let i = 0; i < startingHandSize; i++) {
-            if (deck.length > 0) {
-              const randomIndex = Math.floor(Math.random() * deck.length);
-              const card = deck.splice(randomIndex, 1)[0];
+            if (shuffledDeck.length > 0) {
+              const randomIndex = Math.floor(Math.random() * shuffledDeck.length);
+              const card = shuffledDeck.splice(randomIndex, 1)[0];
 
               await query(
                 'INSERT INTO player_hands (player_id, card_id) VALUES ($1, $2)',
@@ -737,6 +738,31 @@ export function initializeSocketHandlers(io: Server) {
           [nextPlayer.id, newRound, gameId]
         );
 
+        // Check if it's an event round (every 3rd round)
+        if (newRound % 3 === 0 && nextPlayerIndex === 0) {
+          // Get all event cards
+          const eventCards = cardsData.filter(card => card.type === 'Event');
+
+          // Pick a random event card
+          if (eventCards.length > 0) {
+            const randomEventIndex = Math.floor(Math.random() * eventCards.length);
+            const eventCard = eventCards[randomEventIndex];
+
+            // Log the event
+            await query(
+              `INSERT INTO game_log (game_id, round, action_type, action_data)
+               VALUES ($1, $2, $3, $4)`,
+              [gameId, newRound, 'event_card_drawn', JSON.stringify({ cardId: eventCard.id })]
+            );
+
+            // Broadcast event card to all players
+            io.to(gameId).emit('event_card_drawn', {
+              eventCard: eventCard,
+              round: newRound
+            });
+          }
+        }
+
         // Broadcast turn ended
         io.to(gameId).emit('turn_ended', {
           nextPlayerId: nextPlayer.id,
@@ -802,7 +828,10 @@ export function initializeSocketHandlers(io: Server) {
           ...cardsInDiscardResult.rows.map(r => r.card_id)
         ]);
 
-        let remainingCards = cardsData.filter(card => !usedCardIds.has(card.id));
+        // Filter out event cards from the main deck (they're a separate deck)
+        let remainingCards = cardsData.filter(card =>
+          !usedCardIds.has(card.id) && card.type !== 'Event'
+        );
 
         // Draw cards until hand is full (up to 5 total)
         for (let i = 0; i < cardsNeeded && remainingCards.length > 0; i++) {
@@ -877,6 +906,50 @@ export function initializeSocketHandlers(io: Server) {
       } catch (error) {
         console.error('Error ending game:', error);
         socket.emit('error', { message: 'Failed to end game' });
+      }
+    });
+
+    /**
+     * Roll dice for event card
+     */
+    socket.on('roll_event_dice', async (data: { gameId: string; playerId: string; eventCardId: string }) => {
+      const { gameId, playerId, eventCardId } = data;
+
+      try {
+        // Roll a d6
+        const diceRoll = Math.floor(Math.random() * 6) + 1;
+
+        // Get player info
+        const playerResult = await query(
+          'SELECT player_name, party FROM players WHERE id = $1',
+          [playerId]
+        );
+
+        const player = playerResult.rows[0];
+
+        // Log the dice roll
+        const gameResult = await query('SELECT current_round FROM games WHERE id = $1', [gameId]);
+        const currentRound = gameResult.rows[0]?.current_round || 0;
+
+        await query(
+          `INSERT INTO game_log (game_id, round, player_id, action_type, action_data)
+           VALUES ($1, $2, $3, $4, $5)`,
+          [gameId, currentRound, playerId, 'event_dice_roll', JSON.stringify({ eventCardId, diceRoll })]
+        );
+
+        // Broadcast the dice roll result to all players
+        io.to(gameId).emit('event_dice_rolled', {
+          playerId,
+          playerName: player.player_name,
+          party: player.party,
+          diceRoll,
+          eventCardId
+        });
+
+        console.log(`Player ${player.player_name} rolled ${diceRoll} for event ${eventCardId}`);
+      } catch (error) {
+        console.error('Error rolling event dice:', error);
+        socket.emit('error', { message: 'Failed to roll dice' });
       }
     });
 

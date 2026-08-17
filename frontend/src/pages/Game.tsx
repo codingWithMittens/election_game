@@ -6,6 +6,7 @@ import StateMap from '../components/game/StateMap';
 import CardHand from '../components/cards/CardHand';
 import ElectoralVoteBar from '../components/game/ElectoralVoteBar';
 import RulesModal from '../components/rules/RulesModal';
+import EventCardModal from '../components/events/EventCardModal';
 import { Card } from '../types';
 import type { Socket } from 'socket.io-client';
 import statesDataJson from '../data/Electoral_Strategy_States.json';
@@ -72,6 +73,13 @@ function Game() {
 
   // End game confirmation
   const [showEndGameConfirm, setShowEndGameConfirm] = useState(false);
+
+  // Event card state
+  const [eventCard, setEventCard] = useState<Card | null>(null);
+  const [showEventCard, setShowEventCard] = useState(false);
+  const [eventDiceResults, setEventDiceResults] = useState<{
+    [playerId: string]: { playerName: string; party: string; roll: number };
+  }>({});
 
   const playerId = localStorage.getItem('playerId');
   const gameCode = localStorage.getItem('gameCode');
@@ -176,6 +184,29 @@ function Game() {
             setError('You\'ve used all 3 cards! Your turn is ending...');
             setTimeout(() => setError(''), 2000);
           }
+        });
+
+        newSocket.on('event_card_drawn', (data: { eventCard: Card; round: number }) => {
+          setEventCard(data.eventCard);
+          setShowEventCard(true);
+          setEventDiceResults({});
+        });
+
+        newSocket.on('event_dice_rolled', (data: {
+          playerId: string;
+          playerName: string;
+          party: string;
+          diceRoll: number;
+          eventCardId: string;
+        }) => {
+          setEventDiceResults(prev => ({
+            ...prev,
+            [data.playerId]: {
+              playerName: data.playerName,
+              party: data.party,
+              roll: data.diceRoll
+            }
+          }));
         });
 
         newSocket.on('error', (data) => {
@@ -420,6 +451,16 @@ function Game() {
       socket.disconnect();
     }
     navigate('/');
+  };
+
+  const handleRollEventDice = () => {
+    if (socket && game && eventCard && playerId) {
+      socket.emit('roll_event_dice', {
+        gameId: game.id,
+        playerId,
+        eventCardId: eventCard.id
+      });
+    }
   };
 
   const isHost = game?.host_player_id === playerId;
@@ -905,6 +946,15 @@ function Game() {
 
       {/* Rules Modal */}
       <RulesModal isOpen={showRulesModal} onClose={() => setShowRulesModal(false)} />
+
+      {/* Event Card Modal */}
+      <EventCardModal
+        isOpen={showEventCard}
+        eventCard={eventCard}
+        onRollDice={handleRollEventDice}
+        diceResults={eventDiceResults}
+        currentPlayerId={playerId || ''}
+      />
     </div>
   );
 }
