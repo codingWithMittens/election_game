@@ -83,31 +83,29 @@ function ElectoralVoteBar({ players, gameStates, statesData, currentPlayerId, cu
 
   const winPercent = (winThreshold / totalVotes) * 100;
 
+  const currentPlayer = players.find(p => p.id === currentPlayerId);
+  const isMyTurn = currentPlayerId === currentTurnPlayerId;
+  const turnText = isMyTurn ? "Your turn" : "Their turn";
+
   return (
     <div className="w-full">
       <div className="flex justify-between items-center mb-2">
         <div className="text-left">
           <p className="text-lg font-semibold text-blue-700">
             {democrat?.player_name || 'Democrat'}
-            {democrat?.id === currentPlayerId && (
-              <span className={`ml-2 text-sm ${democrat?.id === currentTurnPlayerId ? 'text-green-600' : 'text-gray-500'}`}>
-                ({democrat?.id === currentTurnPlayerId ? "Your turn" : "Their turn"})
-              </span>
-            )}
           </p>
         </div>
         <div className="text-center">
-          <p className="text-xs text-gray-500">Current Polls</p>
-          <p className="text-lg font-bold text-gray-900">{winThreshold}</p>
+          <p className="text-2xl font-bold text-gray-900">{winThreshold}</p>
+          {currentPlayer && (
+            <p className={`text-lg font-bold ${isMyTurn ? 'text-green-600' : 'text-gray-500'}`}>
+              {turnText}
+            </p>
+          )}
         </div>
         <div className="text-right">
           <p className="text-lg font-semibold text-red-700">
             {republican?.player_name || 'Republican'}
-            {republican?.id === currentPlayerId && (
-              <span className={`ml-2 text-sm ${republican?.id === currentTurnPlayerId ? 'text-green-600' : 'text-gray-500'}`}>
-                ({republican?.id === currentTurnPlayerId ? "Your turn" : "Their turn"})
-              </span>
-            )}
           </p>
         </div>
       </div>
