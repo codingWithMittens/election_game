@@ -83,7 +83,6 @@ function ElectoralVoteBar({ players, gameStates, statesData, currentPlayerId, cu
 
   const winPercent = (winThreshold / totalVotes) * 100;
 
-  const currentPlayer = players.find(p => p.id === currentPlayerId);
   const isMyTurn = currentPlayerId === currentTurnPlayerId;
   const turnText = isMyTurn ? "Your turn" : "Their turn";
 
