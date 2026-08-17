@@ -81,6 +81,9 @@ function Game() {
     [playerId: string]: { playerName: string; party: string; roll: number };
   }>({});
 
+  // Track if cards have been dealt this turn
+  const [hasDealtCards, setHasDealtCards] = useState(false);
+
   const playerId = localStorage.getItem('playerId');
   const gameCode = localStorage.getItem('gameCode');
 
@@ -130,6 +133,7 @@ function Game() {
         newSocket.on('hand_updated', (data) => {
           if (data.playerId === playerId) {
             setHand(data.hand || []);
+            setHasDealtCards(true);
           }
         });
 
@@ -177,6 +181,7 @@ function Game() {
 
         newSocket.on('turn_ended', (data) => {
           setGame(prev => prev ? { ...prev, current_turn_player_id: data.nextPlayerId, current_round: data.currentRound, cards_played_this_turn: 0 } : null);
+          setHasDealtCards(false);
         });
 
         newSocket.on('turn_limit_reached', (data) => {
@@ -937,7 +942,7 @@ function Game() {
           <div className="p-4" style={{ pointerEvents: 'auto' }}>
             <CardHand
               cards={hand}
-              onCardClick={isMyTurn && hand.length > 0 ? handleCardClick : undefined}
+              onCardClick={isMyTurn && hasDealtCards ? handleCardClick : undefined}
               selectedCard={selectedCard}
               party={currentPlayer?.party || null}
               selectedStates={selectedStates}
