@@ -231,6 +231,7 @@ function StateMap({ gameStates, onStateClick, selectedStates = [], playerParty =
                           >
                             {selectionBadge}
                             <div className="text-white text-center">
+                              <div className="text-xs font-medium opacity-75 mb-1">{state.region}</div>
                               <div className="text-2xl font-extrabold mb-2">{state.abbreviation}</div>
                               <div className="flex items-center justify-center gap-2 mb-1">
                                 <div className="text-xl font-bold bg-white bg-opacity-20 px-2 py-1 rounded">

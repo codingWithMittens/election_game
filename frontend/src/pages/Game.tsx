@@ -614,19 +614,21 @@ function Game() {
                     </span>
                   )}
                 </div>
-                <button
-                  onClick={() => setShowRulesModal(true)}
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors shadow-md flex items-center gap-2"
-                >
-                  <span>📖</span>
-                  <span>How to Play</span>
-                </button>
-                <button
-                  onClick={() => setShowEndGameConfirm(true)}
-                  className="text-sm text-gray-500 hover:text-red-600 underline transition-colors"
-                >
-                  End Game
-                </button>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => setShowRulesModal(true)}
+                    className="text-sm bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium py-1.5 px-3 rounded-lg transition-colors shadow-sm flex items-center gap-1.5"
+                  >
+                    <span>📖</span>
+                    <span>How to Play</span>
+                  </button>
+                  <button
+                    onClick={() => setShowEndGameConfirm(true)}
+                    className="text-sm text-gray-500 hover:text-red-600 underline transition-colors"
+                  >
+                    End Game
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -824,8 +826,6 @@ function Game() {
 
         {/* State Map */}
         <div className="bg-white rounded-2xl shadow-xl p-6 mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">United States Electoral Map</h2>
-
           {/* Selection Instructions */}
           {selectedCard && (
             <div className="mb-4 p-4 bg-blue-50 border-2 border-blue-300 rounded-lg">
