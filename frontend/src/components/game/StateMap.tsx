@@ -23,9 +23,16 @@ interface StateMapProps {
 type SortOption = 'alphabetical' | 'lean' | 'electoral_votes' | 'swing_states' | 'region';
 type ViewMode = 'grid' | 'map';
 
-function StateMap({ gameStates, onStateClick, selectedStates = [], playerParty: _playerParty = null, cardEffect = null, isStateSelectable }: StateMapProps) {
+function StateMap({ gameStates, onStateClick, selectedStates = [], playerParty = null, cardEffect = null, isStateSelectable }: StateMapProps) {
   const [sortBy, setSortBy] = useState<SortOption>('alphabetical');
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
+
+  // Helper to get display lean based on player's party
+  const getDisplayLean = (absoluteLean: number): number => {
+    // If Republican, flip the sign so positive numbers favor them
+    return playerParty === 'Republican' ? -absoluteLean : absoluteLean;
+  };
+
   const getStateColor = (lean: number): string => {
     if (lean >= 10) return '#1e40af'; // Strong Blue
     if (lean >= 7) return '#3b82f6';  // Lean Blue
@@ -216,7 +223,7 @@ function StateMap({ gameStates, onStateClick, selectedStates = [], playerParty: 
                                 <div className="text-xs font-semibold">EV</div>
                               </div>
                               <div className="text-lg font-bold">
-                                {lean > 0 ? '+' : ''}{lean}
+                                {getDisplayLean(lean) > 0 ? '+' : ''}{getDisplayLean(lean)}
                               </div>
                               {isSelected && cardEffect && (
                                 <div className={`text-xs font-bold mt-2 px-2 py-1 rounded ${
@@ -291,7 +298,7 @@ function StateMap({ gameStates, onStateClick, selectedStates = [], playerParty: 
                         <div className="text-xs font-semibold">EV</div>
                       </div>
                       <div className="text-lg font-bold">
-                        {lean > 0 ? '+' : ''}{lean}
+                        {getDisplayLean(lean) > 0 ? '+' : ''}{getDisplayLean(lean)}
                       </div>
                       {isSelected && cardEffect && (
                         <div className={`text-xs font-bold mt-2 px-2 py-1 rounded ${
