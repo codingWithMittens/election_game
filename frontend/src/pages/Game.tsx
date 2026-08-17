@@ -636,24 +636,6 @@ function Game() {
         <div className="bg-white rounded-2xl shadow-xl p-6 mb-6">
           <div className="mb-4">
             <div className="flex justify-between items-center mb-2">
-              <div>
-                <div className="flex gap-2 mb-1">
-                  <span className="inline-block bg-gray-200 text-gray-700 text-xs font-semibold px-2 py-1 rounded">
-                    Weeks until election: {12 - game.current_round}
-                  </span>
-                  {isMyTurn && (
-                    <>
-                      <span className="inline-block bg-green-200 text-green-700 text-xs font-semibold px-2 py-1 rounded">
-                        Actions Remaining: {3 - (game?.cards_played_this_turn || 0)}
-                      </span>
-                    </>
-                  )}
-                </div>
-                <p className="text-lg font-semibold">
-                  Current Turn: {players.find(p => p.id === game.current_turn_player_id)?.player_name || 'Unknown'}
-                  {isMyTurn && <span className="ml-2 text-green-600">← YOU</span>}
-                </p>
-              </div>
               <div className="flex items-center gap-3">
                 <div className={`px-4 py-2 rounded-lg font-bold flex items-center gap-2 ${
                   currentPlayer?.party === 'Democrat'
@@ -669,21 +651,39 @@ function Game() {
                     </span>
                   )}
                 </div>
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={() => setShowRulesModal(true)}
-                    className="text-sm bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium py-1.5 px-3 rounded-lg transition-colors shadow-sm flex items-center gap-1.5"
-                  >
-                    <span>📖</span>
-                    <span>How to Play</span>
-                  </button>
-                  <button
-                    onClick={() => setShowEndGameConfirm(true)}
-                    className="text-sm text-gray-500 hover:text-red-600 underline transition-colors"
-                  >
-                    End Game
-                  </button>
+                <div>
+                  <div className="flex gap-2 mb-1">
+                    <span className="inline-block bg-gray-200 text-gray-700 text-xs font-semibold px-2 py-1 rounded">
+                      Weeks until election: {12 - game.current_round}
+                    </span>
+                    {isMyTurn && (
+                      <>
+                        <span className="inline-block bg-green-200 text-green-700 text-xs font-semibold px-2 py-1 rounded">
+                          Actions Remaining: {3 - (game?.cards_played_this_turn || 0)}
+                        </span>
+                      </>
+                    )}
+                  </div>
+                  <p className="text-lg font-semibold">
+                    Current Turn: {players.find(p => p.id === game.current_turn_player_id)?.player_name || 'Unknown'}
+                    {isMyTurn && <span className="ml-2 text-green-600">← YOU</span>}
+                  </p>
                 </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setShowRulesModal(true)}
+                  className="text-sm bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium py-1.5 px-3 rounded-lg transition-colors shadow-sm flex items-center gap-1.5"
+                >
+                  <span>📖</span>
+                  <span>How to Play</span>
+                </button>
+                <button
+                  onClick={() => setShowEndGameConfirm(true)}
+                  className="text-sm text-gray-500 hover:text-red-600 underline transition-colors"
+                >
+                  End Game
+                </button>
               </div>
             </div>
           </div>
