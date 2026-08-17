@@ -947,6 +947,167 @@ export function initializeSocketHandlers(io: Server) {
         });
 
         console.log(`Player ${player.player_name} rolled ${diceRoll} for event ${eventCardId}`);
+
+        // Check if all players have rolled for this event
+        const eventRollsResult = await query(
+          `SELECT COUNT(DISTINCT player_id) as roll_count
+           FROM game_log
+           WHERE game_id = $1
+           AND round = $2
+           AND action_type = 'event_dice_roll'
+           AND action_data->>'eventCardId' = $3`,
+          [gameId, currentRound, eventCardId]
+        );
+
+        const playersResult = await query(
+          'SELECT COUNT(*) as total FROM players WHERE game_id = $1',
+          [gameId]
+        );
+
+        const rollCount = parseInt(eventRollsResult.rows[0]?.roll_count || '0');
+        const totalPlayers = parseInt(playersResult.rows[0]?.total || '0');
+
+        // If all players have rolled, apply the event effects
+        if (rollCount === totalPlayers) {
+          console.log(`All ${totalPlayers} players have rolled for event ${eventCardId}. Applying effects...`);
+
+          // Get all dice rolls for this event
+          const allRollsResult = await query(
+            `SELECT player_id, action_data->>'diceRoll' as roll
+             FROM game_log
+             WHERE game_id = $1
+             AND round = $2
+             AND action_type = 'event_dice_roll'
+             AND action_data->>'eventCardId' = $3`,
+            [gameId, currentRound, eventCardId]
+          );
+
+          // Find the event card
+          const eventCard = cardsData.find(card => card.id === eventCardId);
+
+          if (eventCard) {
+            // Apply effects based on dice rolls
+            // For now, use a simplified approach: average dice roll determines severity
+            const rolls = allRollsResult.rows.map(r => parseInt(r.roll));
+            const avgRoll = rolls.reduce((a, b) => a + b, 0) / rolls.length;
+
+            // Parse the primary effect to extract lean changes
+            // Example: "-2 lean for incumbent party in ALL states"
+            const effectMatch = eventCard.primary_effect.match(/([+-]?\d+)\s+lean/i);
+
+            if (effectMatch) {
+              let baseLeanChange = parseInt(effectMatch[1]);
+
+              // Modify effect based on average dice roll
+              // Higher rolls (4-6) increase effect, lower rolls (1-3) decrease it
+              const rollMultiplier = avgRoll >= 4 ? 1.5 : avgRoll >= 2 ? 1.0 : 0.5;
+              const finalLeanChange = Math.round(baseLeanChange * rollMultiplier);
+
+              // Apply to all states (simplified - in production would parse state targets)
+              const statesResult = await query(
+                'SELECT state_abbr, current_lean FROM game_states WHERE game_id = $1',
+                [gameId]
+              );
+
+              for (const stateRow of statesResult.rows) {
+                const newLean = Math.max(-15, Math.min(15, stateRow.current_lean + finalLeanChange));
+
+                await query(
+                  'UPDATE game_states SET current_lean = $1 WHERE game_id = $2 AND state_abbr = $3',
+                  [newLean, gameId, stateRow.state_abbr]
+                );
+              }
+
+              // Log the event effect application
+              await query(
+                `INSERT INTO game_log (game_id, round, action_type, action_data)
+                 VALUES ($1, $2, $3, $4)`,
+                [gameId, currentRound, 'event_effect_applied', JSON.stringify({
+                  eventCardId,
+                  avgRoll: avgRoll.toFixed(1),
+                  leanChange: finalLeanChange
+                })]
+              );
+
+              // Recalculate electoral votes for all players
+              const updatedStatesResult = await query(
+                'SELECT state_abbr, current_lean FROM game_states WHERE game_id = $1',
+                [gameId]
+              );
+
+              const statesDataMap = new Map(statesData.map((s: any) => [s.abbreviation, s]));
+              const playerVotes: { [playerId: string]: number } = {};
+
+              for (const stateRow of updatedStatesResult.rows) {
+                const stateInfo = statesDataMap.get(stateRow.state_abbr);
+                if (stateInfo) {
+                  if (stateRow.current_lean >= 7) {
+                    // Controlled by player 0 (first player, Democrat by convention)
+                    const firstPlayer = await query(
+                      'SELECT id FROM players WHERE game_id = $1 ORDER BY turn_order LIMIT 1',
+                      [gameId]
+                    );
+                    const pid = firstPlayer.rows[0]?.id;
+                    if (pid) {
+                      playerVotes[pid] = (playerVotes[pid] || 0) + stateInfo.electoral_votes;
+                    }
+                  } else if (stateRow.current_lean <= -7) {
+                    // Controlled by player 1 (second player, Republican by convention)
+                    const secondPlayer = await query(
+                      'SELECT id FROM players WHERE game_id = $1 ORDER BY turn_order OFFSET 1 LIMIT 1',
+                      [gameId]
+                    );
+                    const pid = secondPlayer.rows[0]?.id;
+                    if (pid) {
+                      playerVotes[pid] = (playerVotes[pid] || 0) + stateInfo.electoral_votes;
+                    }
+                  }
+                }
+              }
+
+              // Update player electoral votes
+              for (const [pid, votes] of Object.entries(playerVotes)) {
+                await query(
+                  'UPDATE players SET electoral_votes = $1 WHERE id = $2',
+                  [votes, pid]
+                );
+              }
+
+              // Broadcast updated game state to all players
+              const updatedGameData = await query(
+                `SELECT g.*,
+                        json_agg(json_build_object(
+                          'id', p.id,
+                          'player_name', p.player_name,
+                          'party', p.party,
+                          'turn_order', p.turn_order,
+                          'electoral_votes', p.electoral_votes,
+                          'is_connected', p.is_connected
+                        ) ORDER BY p.turn_order) as players
+                 FROM games g
+                 LEFT JOIN players p ON g.id = p.game_id
+                 WHERE g.id = $1
+                 GROUP BY g.id`,
+                [gameId]
+              );
+
+              const updatedStates = await query(
+                'SELECT state_abbr, current_lean, controlling_player_id FROM game_states WHERE game_id = $1',
+                [gameId]
+              );
+
+              io.to(gameId).emit('event_effects_applied', {
+                game: updatedGameData.rows[0],
+                players: updatedGameData.rows[0].players,
+                states: updatedStates.rows,
+                eventCardId,
+                leanChange: finalLeanChange
+              });
+
+              console.log(`Event ${eventCardId} effects applied: ${finalLeanChange} lean change based on avg roll of ${avgRoll.toFixed(1)}`);
+            }
+          }
+        }
       } catch (error) {
         console.error('Error rolling event dice:', error);
         socket.emit('error', { message: 'Failed to roll dice' });

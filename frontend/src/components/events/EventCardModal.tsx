@@ -5,16 +5,19 @@ interface EventCardModalProps {
   isOpen: boolean;
   eventCard: Card | null;
   onRollDice: () => void;
+  onClose: () => void;
   diceResults?: { [playerId: string]: { playerName: string; party: string; roll: number } };
   currentPlayerId: string;
+  totalPlayers: number;
 }
 
-function EventCardModal({ isOpen, eventCard, onRollDice, diceResults = {}, currentPlayerId }: EventCardModalProps) {
+function EventCardModal({ isOpen, eventCard, onRollDice, onClose, diceResults = {}, currentPlayerId, totalPlayers }: EventCardModalProps) {
   const [hasRolled, setHasRolled] = useState(false);
 
   if (!isOpen || !eventCard) return null;
 
   const currentPlayerRolled = currentPlayerId in diceResults;
+  const allPlayersRolled = Object.keys(diceResults).length === totalPlayers;
 
   const handleRoll = () => {
     if (!hasRolled) {
@@ -110,14 +113,17 @@ function EventCardModal({ isOpen, eventCard, onRollDice, diceResults = {}, curre
             )}
           </div>
 
-          {/* Info */}
-          <div className="mt-6 bg-gray-50 rounded-lg p-4 text-sm text-gray-600">
-            <p className="font-semibold mb-2">ℹ️ Note:</p>
-            <p>
-              This is a temporary implementation. In the future, players will have action items
-              they can take to respond to events instead of just rolling dice.
-            </p>
-          </div>
+          {/* OK Button - only show when all players have rolled */}
+          {allPlayersRolled && (
+            <div className="mt-6">
+              <button
+                onClick={onClose}
+                className="w-full py-3 px-6 rounded-lg font-bold text-lg bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
+              >
+                OK
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

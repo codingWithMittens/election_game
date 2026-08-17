@@ -209,6 +209,20 @@ function Game() {
           }));
         });
 
+        newSocket.on('event_effects_applied', (data: {
+          game: GameData;
+          players: Player[];
+          states: GameStateData[];
+          eventCardId: string;
+          leanChange: number;
+        }) => {
+          console.log(`Event effects applied: ${data.leanChange} lean change`);
+          // Update game state with the effects
+          setGame(data.game);
+          setPlayers(data.players);
+          setStates(data.states);
+        });
+
         newSocket.on('error', (data) => {
           setError(data.message);
           setTimeout(() => setError(''), 5000);
@@ -952,8 +966,10 @@ function Game() {
         isOpen={showEventCard}
         eventCard={eventCard}
         onRollDice={handleRollEventDice}
+        onClose={() => setShowEventCard(false)}
         diceResults={eventDiceResults}
         currentPlayerId={playerId || ''}
+        totalPlayers={players.length}
       />
     </div>
   );
