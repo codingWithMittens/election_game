@@ -84,6 +84,9 @@ function Game() {
   // Track if cards have been dealt this turn
   const [hasDealtCards, setHasDealtCards] = useState(false);
 
+  // Track if end turn menu is open
+  const [showEndTurnMenu, setShowEndTurnMenu] = useState(false);
+
   const playerId = localStorage.getItem('playerId');
   const gameCode = localStorage.getItem('gameCode');
 
@@ -689,6 +692,59 @@ function Game() {
             currentPlayerId={playerId || ''}
             currentTurnPlayerId={game.current_turn_player_id}
           />
+
+          {/* Subtle End Turn Button */}
+          {isMyTurn && !selectedCard && (
+            <div className="mt-4 flex justify-center relative">
+              <div className="relative">
+                <button
+                  onClick={() => setShowEndTurnMenu(!showEndTurnMenu)}
+                  className="bg-gray-700 hover:bg-gray-800 text-white font-medium py-2 px-6 rounded-lg shadow-md transition-colors flex items-center gap-2"
+                >
+                  <span>End Turn</span>
+                  <span className="text-xs">▼</span>
+                </button>
+
+                {/* Dropdown Menu */}
+                {showEndTurnMenu && (
+                  <div className="absolute top-full mt-2 right-0 bg-white rounded-lg shadow-xl border border-gray-200 z-30 min-w-[280px]">
+                    <button
+                      onClick={() => {
+                        handleEndTurn();
+                        setShowEndTurnMenu(false);
+                      }}
+                      className="w-full text-left px-4 py-3 hover:bg-gray-50 border-b border-gray-100 transition-colors"
+                    >
+                      <div className="font-semibold text-gray-900">
+                        {(() => {
+                          const cardsPlayed = game?.cards_played_this_turn || 0;
+                          if (cardsPlayed === 0) {
+                            return 'Skip Turn & Redeal All Cards';
+                          } else if (cardsPlayed < 3) {
+                            const actionsRemaining = 3 - cardsPlayed;
+                            return `End Turn (${actionsRemaining} ${actionsRemaining === 1 ? 'action' : 'actions'} remaining)`;
+                          } else {
+                            return 'End Turn';
+                          }
+                        })()}
+                      </div>
+                      <div className="text-xs text-gray-500 mt-1">
+                        {game?.cards_played_this_turn === 0
+                          ? 'Skip without playing and get a fresh hand'
+                          : 'Finish your turn and pass to opponent'}
+                      </div>
+                    </button>
+                    <button
+                      onClick={() => setShowEndTurnMenu(false)}
+                      className="w-full text-left px-4 py-2 hover:bg-gray-50 text-gray-600 text-sm transition-colors rounded-b-lg"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
         {error && (
@@ -849,34 +905,12 @@ function Game() {
         )}
 
 
-        {/* Turn status */}
-        {!selectedCard && (
-          <div className="mb-6">
-            {isMyTurn ? (
-              <div className="bg-green-600 bg-opacity-90 text-white font-semibold py-3 px-6 rounded-lg shadow-lg text-center">
-                <span>Select a card to play or </span>
-                <button
-                  onClick={handleEndTurn}
-                  className="bg-white text-green-700 hover:bg-gray-100 font-bold py-1.5 px-3 rounded transition-colors inline-block"
-                >
-                  {(() => {
-                    const cardsPlayed = game?.cards_played_this_turn || 0;
-                    if (cardsPlayed === 0) {
-                      return 'Skip Turn and Redeal All Cards';
-                    } else if (cardsPlayed < 3) {
-                      const actionsRemaining = 3 - cardsPlayed;
-                      return `Skip remaining ${actionsRemaining} ${actionsRemaining === 1 ? 'action' : 'actions'} and end turn`;
-                    } else {
-                      return 'End Turn';
-                    }
-                  })()}
-                </button>
-              </div>
-            ) : (
-              <div className="bg-blue-600 bg-opacity-90 text-white font-semibold py-3 px-6 rounded-lg text-center shadow-lg">
-                {players.find(p => p.id === game?.current_turn_player_id)?.player_name || 'Opponent'} is playing...
-              </div>
-            )}
+        {/* Minimal turn status - only when waiting */}
+        {!selectedCard && !isMyTurn && (
+          <div className="mb-4 text-center">
+            <div className="inline-block bg-gray-100 text-gray-700 font-medium py-2 px-4 rounded-lg shadow-sm">
+              {players.find(p => p.id === game?.current_turn_player_id)?.player_name || 'Opponent'} is playing...
+            </div>
           </div>
         )}
 
