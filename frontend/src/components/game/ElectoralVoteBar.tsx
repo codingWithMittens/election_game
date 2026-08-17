@@ -91,19 +91,25 @@ function ElectoralVoteBar({ players, gameStates, statesData, currentPlayerId, cu
     <div className="w-full">
       <div className="flex justify-between items-center mb-2">
         <div className="text-left">
+          {democrat?.id === currentPlayerId && (
+            <p className={`text-lg font-bold mb-1 ${isMyTurn ? 'text-green-600' : 'text-gray-500'}`}>
+              {turnText}
+            </p>
+          )}
           <p className="text-lg font-semibold text-blue-700">
             {democrat?.player_name || 'Democrat'}
           </p>
         </div>
         <div className="text-center">
+          <p className="text-sm text-gray-500 mb-1">Current Polls</p>
           <p className="text-2xl font-bold text-gray-900">{winThreshold}</p>
-          {currentPlayer && (
-            <p className={`text-lg font-bold ${isMyTurn ? 'text-green-600' : 'text-gray-500'}`}>
+        </div>
+        <div className="text-right">
+          {republican?.id === currentPlayerId && (
+            <p className={`text-lg font-bold mb-1 ${isMyTurn ? 'text-green-600' : 'text-gray-500'}`}>
               {turnText}
             </p>
           )}
-        </div>
-        <div className="text-right">
           <p className="text-lg font-semibold text-red-700">
             {republican?.player_name || 'Republican'}
           </p>
