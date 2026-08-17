@@ -5,7 +5,7 @@
   "main": "dist/server.js",
   "scripts": {
     "dev": "nodemon src/server.ts",
-    "build": "tsc",
+    "build": "tsc && mkdir -p dist/db && cp src/db/schema.sql dist/db/",
     "start": "node dist/server.js",
     "db:init": "ts-node scripts/init-db.ts",
     "db:setup": "psql electoral_strategy -f src/db/schema.sql",
