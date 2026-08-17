@@ -21,7 +21,26 @@ async function initializeDatabase() {
     const schema = readFileSync(schemaPath, 'utf-8');
 
     await query(schema);
-    console.log('✅ Database schema ready');
+    console.log('✅ Database schema created/verified');
+
+    // Run migrations for existing databases
+    console.log('🔄 Running database migrations...');
+
+    // Migration: Add incumbent_party column if it doesn't exist
+    await query(`
+      DO $$
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns
+          WHERE table_name = 'games' AND column_name = 'incumbent_party'
+        ) THEN
+          ALTER TABLE games ADD COLUMN incumbent_party VARCHAR(20) CHECK (incumbent_party IN ('Democrat', 'Republican'));
+          RAISE NOTICE 'Added incumbent_party column to games table';
+        END IF;
+      END $$;
+    `);
+
+    console.log('✅ Database migrations complete');
   } catch (error) {
     console.error('❌ Database initialization failed:', error);
     // Don't exit - let server start anyway
