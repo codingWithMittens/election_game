@@ -35,8 +35,6 @@ function StateMap({ gameStates, onStateClick, selectedStates = [], playerParty =
 
   // Helper to get gradient colors for lean display based on how favorable it is
   const getLeanGradient = (displayLean: number): string => {
-    const absLean = Math.abs(displayLean);
-
     if (displayLean >= 10) {
       // Very favorable - strong green
       return 'bg-gradient-to-br from-green-600 to-green-700';
@@ -69,16 +67,6 @@ function StateMap({ gameStates, onStateClick, selectedStates = [], playerParty =
     if (lean > -7) return '#fca5a5';  // Tilt Red
     if (lean > -10) return '#ef4444'; // Lean Red
     return '#991b1b'; // Strong Red
-  };
-
-  const getLeanCategory = (lean: number): string => {
-    if (lean >= 10) return 'Strong Blue';
-    if (lean >= 7) return 'Lean Blue';
-    if (lean >= 3) return 'Tilt Blue';
-    if (lean > -3) return 'Toss-up';
-    if (lean > -7) return 'Tilt Red';
-    if (lean > -10) return 'Lean Red';
-    return 'Strong Red';
   };
 
   const getSortedStates = (): (State & { currentLean: number })[] => {
