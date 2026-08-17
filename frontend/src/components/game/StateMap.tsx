@@ -33,6 +33,34 @@ function StateMap({ gameStates, onStateClick, selectedStates = [], playerParty =
     return playerParty === 'Republican' ? -absoluteLean : absoluteLean;
   };
 
+  // Helper to get gradient colors for lean display based on how favorable it is
+  const getLeanGradient = (displayLean: number): string => {
+    const absLean = Math.abs(displayLean);
+
+    if (displayLean >= 10) {
+      // Very favorable - strong green
+      return 'bg-gradient-to-br from-green-600 to-green-700';
+    } else if (displayLean >= 7) {
+      // Favorable - medium green
+      return 'bg-gradient-to-br from-green-500 to-green-600';
+    } else if (displayLean >= 3) {
+      // Slightly favorable - light green
+      return 'bg-gradient-to-br from-green-400 to-green-500';
+    } else if (displayLean > -3) {
+      // Toss-up - gray
+      return 'bg-gradient-to-br from-gray-400 to-gray-500';
+    } else if (displayLean > -7) {
+      // Slightly unfavorable - light red
+      return 'bg-gradient-to-br from-red-400 to-red-500';
+    } else if (displayLean > -10) {
+      // Unfavorable - medium red
+      return 'bg-gradient-to-br from-red-500 to-red-600';
+    } else {
+      // Very unfavorable - strong red
+      return 'bg-gradient-to-br from-red-600 to-red-700';
+    }
+  };
+
   const getStateColor = (lean: number): string => {
     if (lean >= 10) return '#1e40af'; // Strong Blue
     if (lean >= 7) return '#3b82f6';  // Lean Blue
@@ -222,7 +250,7 @@ function StateMap({ gameStates, onStateClick, selectedStates = [], playerParty =
                                 </div>
                                 <div className="text-xs font-semibold">EV</div>
                               </div>
-                              <div className="text-lg font-bold">
+                              <div className={`text-lg font-bold px-3 py-1 rounded-lg ${getLeanGradient(getDisplayLean(lean))} shadow-md`}>
                                 {getDisplayLean(lean) > 0 ? '+' : ''}{getDisplayLean(lean)}
                               </div>
                               {isSelected && cardEffect && (
@@ -297,7 +325,7 @@ function StateMap({ gameStates, onStateClick, selectedStates = [], playerParty =
                         </div>
                         <div className="text-xs font-semibold">EV</div>
                       </div>
-                      <div className="text-lg font-bold">
+                      <div className={`text-lg font-bold px-3 py-1 rounded-lg ${getLeanGradient(getDisplayLean(lean))} shadow-md`}>
                         {getDisplayLean(lean) > 0 ? '+' : ''}{getDisplayLean(lean)}
                       </div>
                       {isSelected && cardEffect && (
