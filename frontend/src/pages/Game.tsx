@@ -8,6 +8,7 @@ import ElectoralVoteBar from '../components/game/ElectoralVoteBar';
 import { Card } from '../types';
 import type { Socket } from 'socket.io-client';
 import statesDataJson from '../data/Electoral_Strategy_States.json';
+import { getCardSelectionRules, validateStateSelection, getSelectionDescription, isStateSelectable } from '../lib/cardRules';
 
 const statesData = (statesDataJson as any).states;
 
@@ -227,11 +228,13 @@ function Game() {
 
     setSelectedCard(card);
 
-    // If card has predefined target states, use those automatically
-    if (card.target_states && card.target_states.length > 0) {
-      setSelectedStates(card.target_states);
+    // Check if card is AUTO type
+    const rules = getCardSelectionRules(card);
+    if (rules.type === 'AUTO') {
+      // For AUTO cards, show which states will be affected
+      setSelectedStates(rules.validStates);
     } else {
-      // Card requires player to select states
+      // For CHOOSE cards, clear selection so player can select states
       setSelectedStates([]);
     }
   };
@@ -243,9 +246,10 @@ function Game() {
       return;
     }
 
-    // If card has predefined targets, don't allow manual selection
-    if (selectedCard.target_states && selectedCard.target_states.length > 0) {
-      setError('This card has fixed targets!');
+    // Check if card is AUTO type - don't allow manual selection
+    const rules = getCardSelectionRules(selectedCard);
+    if (rules.type === 'AUTO') {
+      setError('This card automatically applies to its targets!');
       setTimeout(() => setError(''), 3000);
       return;
     }
@@ -264,8 +268,14 @@ function Game() {
       return;
     }
 
-    if (selectedStates.length === 0) {
-      setError('Select target state(s) or choose a different card!');
+    // Get selection rules to determine what to send
+    const selectionRules = getCardSelectionRules(selectedCard);
+    const statesToSend = selectionRules.type === 'AUTO' ? [] : selectedStates;
+
+    // Validate state selection based on card rules
+    const validation = validateStateSelection(selectedCard, statesToSend);
+    if (!validation.valid) {
+      setError(validation.error || 'Invalid state selection');
       setTimeout(() => setError(''), 3000);
       return;
     }
@@ -280,7 +290,7 @@ function Game() {
       gameId: game.id,
       playerId,
       cardId: selectedCard.id,
-      targetStates: selectedStates,
+      targetStates: statesToSend,
       diceRoll: diceRoll
     });
 
@@ -311,11 +321,15 @@ function Game() {
     // Auto-play the card after rolling
     setTimeout(() => {
       if (socket && game && selectedCard) {
+        // Get selection rules to determine what to send
+        const selectionRules = getCardSelectionRules(selectedCard);
+        const statesToSend = selectionRules.type === 'AUTO' ? [] : selectedStates;
+
         socket.emit('play_card', {
           gameId: game.id,
           playerId,
           cardId: selectedCard.id,
-          targetStates: selectedStates,
+          targetStates: statesToSend,
           diceRoll: roll
         });
         setDiceRoll(null);
@@ -365,6 +379,23 @@ function Game() {
 
     setSelectedCard(null);
     setSelectedStates([]);
+  };
+
+  const handleDealCards = () => {
+    if (!socket || !game) {
+      return;
+    }
+
+    if (game.current_turn_player_id !== playerId) {
+      setError("It's not your turn!");
+      setTimeout(() => setError(''), 3000);
+      return;
+    }
+
+    socket.emit('deal_cards', {
+      gameId: game.id,
+      playerId
+    });
   };
 
   const handleEndGame = () => {
@@ -555,11 +586,8 @@ function Game() {
                   </span>
                   {isMyTurn && (
                     <>
-                      <span className="inline-block bg-blue-200 text-blue-700 text-xs font-semibold px-2 py-1 rounded">
-                        Cards: {game?.cards_played_this_turn || 0}/3
-                      </span>
                       <span className="inline-block bg-green-200 text-green-700 text-xs font-semibold px-2 py-1 rounded">
-                        Turns left: {3 - (game?.cards_played_this_turn || 0)}
+                        Actions Remaining: {3 - (game?.cards_played_this_turn || 0)}
                       </span>
                     </>
                   )}
@@ -764,7 +792,17 @@ function Game() {
                   onClick={handleEndTurn}
                   className="bg-white text-green-700 hover:bg-gray-100 font-bold py-1.5 px-3 rounded transition-colors inline-block"
                 >
-                  End Turn
+                  {(() => {
+                    const cardsPlayed = game?.cards_played_this_turn || 0;
+                    if (cardsPlayed === 0) {
+                      return 'Skip Turn and Redeal All Cards';
+                    } else if (cardsPlayed < 3) {
+                      const actionsRemaining = 3 - cardsPlayed;
+                      return `Skip remaining ${actionsRemaining} ${actionsRemaining === 1 ? 'action' : 'actions'} and end turn`;
+                    } else {
+                      return 'End Turn';
+                    }
+                  })()}
                 </button>
               </div>
             ) : (
@@ -778,9 +816,26 @@ function Game() {
         {/* State Map */}
         <div className="bg-white rounded-2xl shadow-xl p-6 mb-6">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">United States Electoral Map</h2>
+
+          {/* Selection Instructions */}
+          {selectedCard && (
+            <div className="mb-4 p-4 bg-blue-50 border-2 border-blue-300 rounded-lg">
+              <p className="text-sm font-semibold text-blue-900">
+                {getSelectionDescription(selectedCard)}
+              </p>
+            </div>
+          )}
+
           <StateMap
             gameStates={states}
-            onStateClick={selectedCard ? handleStateClick : undefined}
+            onStateClick={(() => {
+              if (!selectedCard) return undefined;
+              const rules = getCardSelectionRules(selectedCard);
+              // For AUTO cards, don't allow state clicking
+              if (rules.type === 'AUTO') return undefined;
+              // For CHOOSE cards, allow state selection
+              return handleStateClick;
+            })()}
             selectedStates={selectedStates}
             playerParty={currentPlayer?.party || null}
             cardEffect={(() => {
@@ -806,6 +861,14 @@ function Game() {
 
               return null;
             })()}
+            isStateSelectable={(() => {
+              if (!selectedCard) return undefined;
+              const rules = getCardSelectionRules(selectedCard);
+              // For AUTO cards, don't apply selectability restrictions (don't gray out states)
+              if (rules.type === 'AUTO') return undefined;
+              // For CHOOSE cards, apply selectability rules
+              return (stateAbbr: string) => isStateSelectable(selectedCard, stateAbbr, selectedStates);
+            })()}
           />
         </div>
 
@@ -824,6 +887,7 @@ function Game() {
                 setSelectedCard(null);
                 setSelectedStates([]);
               }}
+              onDealCards={handleDealCards}
               isMyTurn={isMyTurn}
             />
           </div>

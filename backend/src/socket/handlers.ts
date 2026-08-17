@@ -3,6 +3,7 @@ import { query } from '../db/connection';
 import cardsDataJson from '../data/Electoral_Strategy_Cards.json';
 import { Card } from '../types';
 import { calculateElectoralVotes } from '../lib/gameLogic';
+import { validateStateSelection, getCardSelectionRules } from '../lib/cardRules';
 
 const cardsData = (cardsDataJson as any).cards as Card[];
 
@@ -66,7 +67,7 @@ export function initializeSocketHandlers(io: Server) {
       const game = gameResult.rows[0];
       if (game.status === 'in_progress') {
         const handResult = await query(
-          'SELECT card_id FROM player_hands WHERE player_id = $1',
+          'SELECT card_id FROM player_hands WHERE player_id = $1 ORDER BY drawn_at ASC',
           [playerId]
         );
 
@@ -173,7 +174,7 @@ export function initializeSocketHandlers(io: Server) {
         const hands: Record<string, any[]> = {};
         for (const player of updatedPlayers) {
           const handResult = await query(
-            'SELECT card_id FROM player_hands WHERE player_id = $1',
+            'SELECT card_id FROM player_hands WHERE player_id = $1 ORDER BY drawn_at ASC',
             [player.id]
           );
           hands[player.id] = handResult.rows.map(row =>
@@ -233,6 +234,21 @@ export function initializeSocketHandlers(io: Server) {
           return;
         }
 
+        // Validate state selection
+        const selectionRules = getCardSelectionRules(card);
+        const effectiveTargetStates = targetStates || [];
+        const validation = validateStateSelection(card, effectiveTargetStates);
+
+        if (!validation.valid) {
+          socket.emit('error', { message: validation.error || 'Invalid state selection' });
+          return;
+        }
+
+        // For AUTO cards, use the card's target states
+        const statesToApply = selectionRules.type === 'AUTO'
+          ? card.target_states || []
+          : effectiveTargetStates;
+
         // Remove card from hand
         await query(
           'DELETE FROM player_hands WHERE player_id = $1 AND card_id = $2',
@@ -246,7 +262,7 @@ export function initializeSocketHandlers(io: Server) {
         );
 
         // Apply card effect
-        if (targetStates && targetStates.length > 0) {
+        if (statesToApply && statesToApply.length > 0) {
           let leanChange = 0;
 
           // If card requires dice and has dice mechanic outcomes
@@ -270,7 +286,7 @@ export function initializeSocketHandlers(io: Server) {
           }
 
           // Apply lean change to target states
-          for (const stateAbbr of targetStates) {
+          for (const stateAbbr of statesToApply) {
             await query(
               `UPDATE game_states
                SET current_lean = GREATEST(-15, LEAST(15, current_lean + $1))
@@ -301,7 +317,7 @@ export function initializeSocketHandlers(io: Server) {
         );
 
         const handResult = await query(
-          'SELECT card_id FROM player_hands WHERE player_id = $1',
+          'SELECT card_id FROM player_hands WHERE player_id = $1 ORDER BY drawn_at ASC',
           [playerId]
         );
 
@@ -320,7 +336,7 @@ export function initializeSocketHandlers(io: Server) {
           playerId,
           cardId,
           cardName: card.name,
-          targetStates,
+          targetStates: statesToApply,
           diceRoll,
           states: statesResult.rows,
           cardsPlayedThisTurn: updatedGame.rows[0].cards_played_this_turn
@@ -376,7 +392,7 @@ export function initializeSocketHandlers(io: Server) {
               );
 
               const nextPlayerHandResult = await query(
-                'SELECT card_id FROM player_hands WHERE player_id = $1',
+                'SELECT card_id FROM player_hands WHERE player_id = $1 ORDER BY drawn_at ASC',
                 [nextPlayer.id]
               );
               const cardsInHand = nextPlayerHandResult.rows.length;
@@ -417,7 +433,7 @@ export function initializeSocketHandlers(io: Server) {
               });
 
               const nextPlayerHandRefreshed = await query(
-                'SELECT card_id FROM player_hands WHERE player_id = $1',
+                'SELECT card_id FROM player_hands WHERE player_id = $1 ORDER BY drawn_at ASC',
                 [nextPlayer.id]
               );
               const hand = nextPlayerHandRefreshed.rows.map(row =>
@@ -490,7 +506,7 @@ export function initializeSocketHandlers(io: Server) {
 
         // Get updated hand
         const handResult = await query(
-          'SELECT card_id FROM player_hands WHERE player_id = $1',
+          'SELECT card_id FROM player_hands WHERE player_id = $1 ORDER BY drawn_at ASC',
           [playerId]
         );
 
@@ -564,7 +580,7 @@ export function initializeSocketHandlers(io: Server) {
               );
 
               const nextPlayerHandResult = await query(
-                'SELECT card_id FROM player_hands WHERE player_id = $1',
+                'SELECT card_id FROM player_hands WHERE player_id = $1 ORDER BY drawn_at ASC',
                 [nextPlayer.id]
               );
               const cardsInHand = nextPlayerHandResult.rows.length;
@@ -605,7 +621,7 @@ export function initializeSocketHandlers(io: Server) {
               });
 
               const nextPlayerHandRefreshed = await query(
-                'SELECT card_id FROM player_hands WHERE player_id = $1',
+                'SELECT card_id FROM player_hands WHERE player_id = $1 ORDER BY drawn_at ASC',
                 [nextPlayer.id]
               );
               const hand = nextPlayerHandRefreshed.rows.map(row =>
@@ -677,6 +693,42 @@ export function initializeSocketHandlers(io: Server) {
           );
         }
 
+        // If player ended turn without playing any cards, discard their entire hand
+        if (game.cards_played_this_turn === 0) {
+          // Get all cards in current player's hand
+          const currentPlayerHandResult = await query(
+            'SELECT card_id FROM player_hands WHERE player_id = $1 ORDER BY drawn_at ASC',
+            [playerId]
+          );
+
+          // Move all cards from hand to discard pile
+          for (const row of currentPlayerHandResult.rows) {
+            await query(
+              'INSERT INTO discard_pile (game_id, card_id) VALUES ($1, $2)',
+              [gameId, row.card_id]
+            );
+          }
+
+          // Remove all cards from current player's hand
+          await query(
+            'DELETE FROM player_hands WHERE player_id = $1',
+            [playerId]
+          );
+
+          // Log the skip action
+          await query(
+            `INSERT INTO game_log (game_id, round, player_id, action_type, action_data)
+             VALUES ($1, $2, $3, $4, $5)`,
+            [gameId, game.current_round, playerId, 'skip_turn', JSON.stringify({ message: 'Player skipped turn and discarded all cards' })]
+          );
+
+          // Send updated empty hand to current player
+          io.to(gameId).emit('hand_updated', {
+            playerId: playerId,
+            hand: []
+          });
+        }
+
         // Update game and reset cards played counter
         await query(
           `UPDATE games
@@ -685,14 +737,50 @@ export function initializeSocketHandlers(io: Server) {
           [nextPlayer.id, newRound, gameId]
         );
 
-        // Refill next player's hand to 5 cards
-        // First, check how many cards they currently have
-        const nextPlayerHandResult = await query(
-          'SELECT card_id FROM player_hands WHERE player_id = $1',
-          [nextPlayer.id]
+        // Broadcast turn ended
+        io.to(gameId).emit('turn_ended', {
+          nextPlayerId: nextPlayer.id,
+          currentRound: newRound
+        });
+      } catch (error) {
+        console.error('Error ending turn:', error);
+        socket.emit('error', { message: 'Failed to end turn' });
+      }
+    });
+
+    /**
+     * Deal cards - draw 5 new cards for current player
+     */
+    socket.on('deal_cards', async (data: { gameId: string; playerId: string }) => {
+      const { gameId, playerId } = data;
+
+      try {
+        // Get current game state
+        const gameResult = await query(
+          'SELECT * FROM games WHERE id = $1',
+          [gameId]
         );
 
-        const cardsNeeded = 5 - nextPlayerHandResult.rows.length;
+        const game = gameResult.rows[0];
+
+        // Verify it's the player's turn
+        if (game.current_turn_player_id !== playerId) {
+          socket.emit('error', { message: 'Not your turn' });
+          return;
+        }
+
+        // Check current hand size
+        const currentHandResult = await query(
+          'SELECT card_id FROM player_hands WHERE player_id = $1 ORDER BY drawn_at ASC',
+          [playerId]
+        );
+
+        if (currentHandResult.rows.length >= 5) {
+          socket.emit('error', { message: 'Your hand is already full (5 cards)' });
+          return;
+        }
+
+        const cardsNeeded = 5 - currentHandResult.rows.length;
 
         // Get all cards currently in hands for this game
         const cardsInHandsResult = await query(
@@ -716,14 +804,14 @@ export function initializeSocketHandlers(io: Server) {
 
         let remainingCards = cardsData.filter(card => !usedCardIds.has(card.id));
 
-        // Draw cards until hand is full or deck is empty
+        // Draw cards until hand is full (up to 5 total)
         for (let i = 0; i < cardsNeeded && remainingCards.length > 0; i++) {
           const randomIndex = Math.floor(Math.random() * remainingCards.length);
           const randomCard = remainingCards[randomIndex];
 
           await query(
             'INSERT INTO player_hands (player_id, card_id) VALUES ($1, $2)',
-            [nextPlayer.id, randomCard.id]
+            [playerId, randomCard.id]
           );
 
           // Remove drawn card from remaining cards
@@ -731,30 +819,31 @@ export function initializeSocketHandlers(io: Server) {
           usedCardIds.add(randomCard.id);
         }
 
-        // Get updated hand for next player
+        // Get updated hand for player
         const updatedHandResult = await query(
-          'SELECT card_id FROM player_hands WHERE player_id = $1',
-          [nextPlayer.id]
+          'SELECT card_id FROM player_hands WHERE player_id = $1 ORDER BY drawn_at ASC',
+          [playerId]
         );
 
         const updatedHand = updatedHandResult.rows.map(row =>
           cardsData.find(c => c.id === row.card_id)
         );
 
-        // Send updated hand to next player
+        // Send updated hand to player
         io.to(gameId).emit('hand_updated', {
-          playerId: nextPlayer.id,
+          playerId: playerId,
           hand: updatedHand
         });
 
-        // Broadcast turn ended
-        io.to(gameId).emit('turn_ended', {
-          nextPlayerId: nextPlayer.id,
-          currentRound: newRound
-        });
+        // Log the deal action
+        await query(
+          `INSERT INTO game_log (game_id, round, player_id, action_type, action_data)
+           VALUES ($1, $2, $3, $4, $5)`,
+          [gameId, game.current_round, playerId, 'deal_cards', JSON.stringify({ cardsDealt: updatedHand.length })]
+        );
       } catch (error) {
-        console.error('Error ending turn:', error);
-        socket.emit('error', { message: 'Failed to end turn' });
+        console.error('Error dealing cards:', error);
+        socket.emit('error', { message: 'Failed to deal cards' });
       }
     });
 

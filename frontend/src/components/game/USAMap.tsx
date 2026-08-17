@@ -14,6 +14,7 @@ interface USAMapProps {
   selectedStates?: string[];
   getStateColor: (lean: number) => string;
   cardEffect?: 'positive' | 'negative' | null;
+  isStateSelectable?: (stateAbbr: string) => boolean;
 }
 
 interface TooltipData {
@@ -25,7 +26,7 @@ interface TooltipData {
   y: number;
 }
 
-function USAMap({ statesData, onStateClick, selectedStates = [], getStateColor, cardEffect = null }: USAMapProps) {
+function USAMap({ statesData, onStateClick, selectedStates = [], getStateColor, cardEffect = null, isStateSelectable }: USAMapProps) {
   const svgContainerRef = useRef<HTMLDivElement>(null);
   const [tooltip, setTooltip] = useState<TooltipData | null>(null);
 
@@ -59,9 +60,17 @@ function USAMap({ statesData, onStateClick, selectedStates = [], getStateColor, 
                 const lean = state.currentLean;
                 const color = getStateColor(lean);
                 const isSelected = selectedStates.includes(state.abbreviation);
+                const selectable = isStateSelectable ? isStateSelectable(state.abbreviation) : true;
 
                 // Apply fill color
                 (statePath as SVGElement).style.fill = color;
+
+                // Apply opacity for non-selectable states
+                if (!selectable && onStateClick) {
+                  (statePath as SVGElement).style.opacity = '0.4';
+                } else {
+                  (statePath as SVGElement).style.opacity = '1';
+                }
 
                 // Apply stroke for selected states with positive/negative indicators
                 if (isSelected && cardEffect) {
@@ -114,13 +123,16 @@ function USAMap({ statesData, onStateClick, selectedStates = [], getStateColor, 
                   setTooltip(null);
                 });
 
-                // Add click handler if clicking is enabled
+                // Add click handler if clicking is enabled and state is selectable
                 if (onStateClick) {
-                  (statePath as SVGElement).style.cursor = 'pointer';
-
-                  statePath.addEventListener('click', () => {
-                    onStateClick(state.abbreviation);
-                  });
+                  if (selectable) {
+                    (statePath as SVGElement).style.cursor = 'pointer';
+                    statePath.addEventListener('click', () => {
+                      onStateClick(state.abbreviation);
+                    });
+                  } else {
+                    (statePath as SVGElement).style.cursor = 'not-allowed';
+                  }
                 }
 
                 // Update title for tooltip

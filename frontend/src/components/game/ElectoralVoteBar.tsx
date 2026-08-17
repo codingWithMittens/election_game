@@ -90,7 +90,7 @@ function ElectoralVoteBar({ players, gameStates, statesData }: ElectoralVoteBarP
           </p>
         </div>
         <div className="text-center">
-          <p className="text-xs text-gray-500">Need to Win</p>
+          <p className="text-xs text-gray-500">Current Polls</p>
           <p className="text-lg font-bold text-gray-900">{winThreshold}</p>
         </div>
         <div className="text-right">

@@ -17,12 +17,13 @@ interface StateMapProps {
   selectedStates?: string[];
   playerParty?: 'Democrat' | 'Republican' | null;
   cardEffect?: 'positive' | 'negative' | null;
+  isStateSelectable?: (stateAbbr: string) => boolean;
 }
 
 type SortOption = 'alphabetical' | 'lean' | 'electoral_votes' | 'swing_states' | 'region';
 type ViewMode = 'grid' | 'map';
 
-function StateMap({ gameStates, onStateClick, selectedStates = [], playerParty: _playerParty = null, cardEffect = null }: StateMapProps) {
+function StateMap({ gameStates, onStateClick, selectedStates = [], playerParty: _playerParty = null, cardEffect = null, isStateSelectable }: StateMapProps) {
   const [sortBy, setSortBy] = useState<SortOption>('alphabetical');
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const getStateColor = (lean: number): string => {
@@ -152,6 +153,7 @@ function StateMap({ gameStates, onStateClick, selectedStates = [], playerParty: 
             const lean = state.currentLean;
             const color = getStateColor(lean);
             const isSelected = selectedStates.includes(state.abbreviation);
+            const selectable = isStateSelectable ? isStateSelectable(state.abbreviation) : true;
 
             // Determine selection visual treatment based on card effect
             let selectionClass = '';
@@ -186,9 +188,11 @@ function StateMap({ gameStates, onStateClick, selectedStates = [], playerParty: 
                 onClick={() => onStateClick?.(state.abbreviation)}
                 className={`relative p-3 rounded-lg transition-all duration-200 ${selectionBorder} ${
                   isSelected ? selectionClass : 'hover:shadow-lg'
-                } ${onStateClick ? 'cursor-pointer' : 'cursor-default'}`}
+                } ${onStateClick && selectable ? 'cursor-pointer' : 'cursor-not-allowed'} ${
+                  !selectable && onStateClick ? 'opacity-40' : ''
+                }`}
                 style={{ backgroundColor: color }}
-                disabled={!onStateClick}
+                disabled={!onStateClick || !selectable}
               >
                 {selectionBadge}
                 <div className="text-white text-center">
@@ -220,6 +224,7 @@ function StateMap({ gameStates, onStateClick, selectedStates = [], playerParty: 
           selectedStates={selectedStates}
           getStateColor={getStateColor}
           cardEffect={cardEffect}
+          isStateSelectable={isStateSelectable}
         />
       )}
     </div>

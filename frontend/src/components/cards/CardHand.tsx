@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Card } from '../../types';
+import { getCardSelectionRules } from '../../lib/cardRules';
 
 interface CardHandProps {
   cards: Card[];
@@ -10,6 +11,7 @@ interface CardHandProps {
   onPlayCard?: () => void;
   onDiscardCard?: () => void;
   onCancel?: () => void;
+  onDealCards?: () => void;
   isMyTurn?: boolean;
 }
 
@@ -22,6 +24,7 @@ function CardHand({
   onPlayCard,
   onDiscardCard,
   onCancel,
+  onDealCards,
   isMyTurn = false
 }: CardHandProps) {
   const [isExpanded, setIsExpanded] = useState(true);
@@ -55,6 +58,14 @@ function CardHand({
     return (
       <div className={`${containerBg} border-2 ${borderColor} rounded-lg p-4 text-center`}>
         <p className={textColor}>No cards in hand</p>
+        {isMyTurn && onDealCards && (
+          <button
+            onClick={onDealCards}
+            className="mt-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors shadow-lg"
+          >
+            Deal Cards
+          </button>
+        )}
       </div>
     );
   }
@@ -247,31 +258,47 @@ function CardHand({
           {/* Info section */}
           <div className="mt-3 p-2 bg-blue-50 rounded-lg border border-blue-200">
             <p className="text-xs text-blue-900">
-              {selectedStates.length > 0 ? (
-                <>
-                  <span className="font-semibold">Targeting:</span> {selectedStates.join(', ')}
-                </>
-              ) : selectedCard.target_states && selectedCard.target_states.length > 0 ? (
-                <>
-                  <span className="font-semibold">Auto-targeting:</span> {selectedCard.target_states.join(', ')}
-                </>
-              ) : (
-                <span className="text-amber-700">⚠️ Select target state(s) on the map</span>
-              )}
+              {(() => {
+                const rules = getCardSelectionRules(selectedCard);
+
+                if (rules.type === 'AUTO') {
+                  return (
+                    <>
+                      <span className="font-semibold">Auto-applies to:</span>{' '}
+                      {rules.validStates.length > 0 ? rules.validStates.join(', ') : 'All states'}
+                    </>
+                  );
+                }
+
+                if (selectedStates.length > 0) {
+                  return (
+                    <>
+                      <span className="font-semibold">Targeting:</span> {selectedStates.join(', ')}
+                    </>
+                  );
+                }
+
+                return <span className="text-amber-700">⚠️ Select target state(s) on the map</span>;
+              })()}
             </p>
           </div>
 
           {/* Action buttons inline below card */}
           <div className="flex gap-2 mt-3">
-            {selectedStates.length > 0 && (
-              <button
-                onClick={onPlayCard}
-                disabled={!isMyTurn}
-                className="flex-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-semibold py-2 px-3 rounded-lg transition-colors shadow-lg text-sm"
-              >
-                Play
-              </button>
-            )}
+            {(() => {
+              const rules = getCardSelectionRules(selectedCard);
+              const canPlay = rules.type === 'AUTO' || selectedStates.length > 0;
+
+              return canPlay && (
+                <button
+                  onClick={onPlayCard}
+                  disabled={!isMyTurn}
+                  className="flex-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-semibold py-2 px-3 rounded-lg transition-colors shadow-lg text-sm"
+                >
+                  Play
+                </button>
+              );
+            })()}
             <button
               onClick={onDiscardCard}
               disabled={!isMyTurn}
@@ -315,12 +342,22 @@ function CardHand({
     <div className={`${containerBg} rounded-xl shadow-lg p-4 border ${borderColor}`}>
       <div className="flex items-center justify-between mb-3">
         <h3 className={`font-semibold ${textColor}`}>Your Hand ({cards.length} cards)</h3>
-        <button
-          onClick={() => setIsExpanded(false)}
-          className={`${textColor} ${hoverBg} rounded px-2 py-1 transition-colors`}
-        >
-          ▲ Collapse
-        </button>
+        <div className="flex gap-2 items-center">
+          {isMyTurn && onDealCards && cards.length < 5 && (
+            <button
+              onClick={onDealCards}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-1.5 px-3 rounded-lg transition-colors shadow-lg text-sm"
+            >
+              Deal Cards
+            </button>
+          )}
+          <button
+            onClick={() => setIsExpanded(false)}
+            className={`${textColor} ${hoverBg} rounded px-2 py-1 transition-colors`}
+          >
+            ▲ Collapse
+          </button>
+        </div>
       </div>
       <div className="flex gap-3 overflow-x-auto pb-2 items-start">
         {cards.map((card, index) => renderCard(card, index))}
