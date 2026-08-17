@@ -651,24 +651,14 @@ function Game() {
                     </span>
                   )}
                 </div>
-                <div>
-                  <div className="flex gap-2 mb-1">
-                    <span className="inline-block bg-gray-200 text-gray-700 text-xs font-semibold px-2 py-1 rounded">
-                      Weeks until election: {12 - game.current_round}
-                    </span>
-                    {isMyTurn && (
-                      <>
-                        <span className="inline-block bg-green-200 text-green-700 text-xs font-semibold px-2 py-1 rounded">
-                          Actions Remaining: {3 - (game?.cards_played_this_turn || 0)}
-                        </span>
-                      </>
-                    )}
-                  </div>
-                  <p className="text-lg font-semibold">
-                    Current Turn: {players.find(p => p.id === game.current_turn_player_id)?.player_name || 'Unknown'}
-                    {isMyTurn && <span className="ml-2 text-green-600">← YOU</span>}
-                  </p>
+                <div className={`px-4 py-2 rounded-lg font-bold flex items-center gap-2 bg-gray-200 text-gray-700`}>
+                  <span>Weeks until election: {12 - game.current_round}</span>
                 </div>
+                {isMyTurn && (
+                  <div className={`px-4 py-2 rounded-lg font-bold flex items-center gap-2 bg-green-200 text-green-700`}>
+                    <span>Actions Remaining: {3 - (game?.cards_played_this_turn || 0)}</span>
+                  </div>
+                )}
               </div>
               <div className="flex flex-col gap-2">
                 <button
@@ -687,7 +677,12 @@ function Game() {
               </div>
             </div>
           </div>
-          <ElectoralVoteBar players={players} gameStates={states} statesData={statesData} />
+          <ElectoralVoteBar
+            players={players}
+            gameStates={states}
+            statesData={statesData}
+            currentPlayerId={playerId || ''}
+          />
         </div>
 
         {error && (
