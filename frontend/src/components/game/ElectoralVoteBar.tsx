@@ -26,9 +26,10 @@ interface ElectoralVoteBarProps {
   gameStates: GameStateData[];
   statesData: State[];
   currentPlayerId: string;
+  currentTurnPlayerId: string | null;
 }
 
-function ElectoralVoteBar({ players, gameStates, statesData, currentPlayerId }: ElectoralVoteBarProps) {
+function ElectoralVoteBar({ players, gameStates, statesData, currentPlayerId, currentTurnPlayerId }: ElectoralVoteBarProps) {
   const democrat = players.find(p => p.party === 'Democrat');
   const republican = players.find(p => p.party === 'Republican');
 
@@ -86,11 +87,13 @@ function ElectoralVoteBar({ players, gameStates, statesData, currentPlayerId }: 
     <div className="w-full">
       <div className="flex justify-between items-center mb-2">
         <div className="text-left">
-          {democrat?.id === currentPlayerId && (
-            <p className="text-xs text-green-600 font-bold mb-0.5">← YOU</p>
-          )}
           <p className="text-lg font-semibold text-blue-700">
             {democrat?.player_name || 'Democrat'}
+            {democrat?.id === currentPlayerId && (
+              <span className={`ml-2 text-sm ${democrat?.id === currentTurnPlayerId ? 'text-green-600' : 'text-gray-500'}`}>
+                ({democrat?.id === currentTurnPlayerId ? "Your turn" : "Their turn"})
+              </span>
+            )}
           </p>
         </div>
         <div className="text-center">
@@ -98,11 +101,13 @@ function ElectoralVoteBar({ players, gameStates, statesData, currentPlayerId }: 
           <p className="text-lg font-bold text-gray-900">{winThreshold}</p>
         </div>
         <div className="text-right">
-          {republican?.id === currentPlayerId && (
-            <p className="text-xs text-green-600 font-bold mb-0.5">YOU →</p>
-          )}
           <p className="text-lg font-semibold text-red-700">
             {republican?.player_name || 'Republican'}
+            {republican?.id === currentPlayerId && (
+              <span className={`ml-2 text-sm ${republican?.id === currentTurnPlayerId ? 'text-green-600' : 'text-gray-500'}`}>
+                ({republican?.id === currentTurnPlayerId ? "Your turn" : "Their turn"})
+              </span>
+            )}
           </p>
         </div>
       </div>

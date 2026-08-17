@@ -682,6 +682,7 @@ function Game() {
             gameStates={states}
             statesData={statesData}
             currentPlayerId={playerId || ''}
+            currentTurnPlayerId={game.current_turn_player_id}
           />
         </div>
 
